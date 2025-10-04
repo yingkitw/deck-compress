@@ -7,10 +7,7 @@ import sys
 import os
 from pathlib import Path
 
-# Add src to path
-current_dir = Path(__file__).parent
-src_path = current_dir.parent / "src"
-sys.path.insert(0, str(src_path))
+# No need to add src to path since deck_compress.py is in the same directory
 
 def test_imports():
     """Test if all required modules can be imported"""

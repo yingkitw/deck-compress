@@ -10,23 +10,7 @@ import uuid
 from typing import Optional
 import sys
 
-# Add the src directory to the path to import deck_compress
-current_dir = Path(__file__).parent
-src_path = current_dir.parent / "src"
-
-# Try multiple paths for the src directory
-possible_paths = [
-    src_path,
-    current_dir / "src",
-    Path("/app/src"),
-    Path("/workspace/src")
-]
-
-for path in possible_paths:
-    if path.exists():
-        sys.path.insert(0, str(path))
-        break
-
+# Import deck_compress from the same directory
 try:
     from deck_compress import process_single_file, CompressionProgress
     from rich.console import Console
@@ -35,19 +19,6 @@ except ImportError as e:
     print(f"Current working directory: {os.getcwd()}")
     print(f"Python path: {sys.path}")
     print(f"Files in current directory: {os.listdir('.')}")
-    
-    # Try to find the deck_compress module
-    for path in possible_paths:
-        if path.exists():
-            print(f"Checking {path}: {os.listdir(path) if path.is_dir() else 'not a directory'}")
-    
-    # Try to import from current directory as fallback
-    try:
-        import deck_compress
-        print("Found deck_compress in current directory")
-    except ImportError:
-        print("deck_compress not found in current directory either")
-    
     raise
 
 app = FastAPI(title="Deck Compress Web", version="1.0.0")

@@ -55,9 +55,20 @@ A Python tool for compressing PowerPoint presentations, Word documents, video fi
 ### Quick Installation
 
 1. **Clone or download the project**
-2. **Install Python dependencies:**
+2. **Choose your interface:**
+
+   **For Web Interface (Recommended):**
    ```bash
+   cd web_app
    pip install -r requirements.txt
+   python main.py
+   # Access at http://localhost:8000
+   ```
+
+   **For CLI Tool:**
+   ```bash
+   pip install -r config/requirements.txt
+   python web_app/deck_compress.py --help
    ```
 
 3. **Install ffmpeg:**
@@ -67,6 +78,10 @@ A Python tool for compressing PowerPoint presentations, Word documents, video fi
 
 4. **Verify installation:**
    ```bash
+   # Test web app
+   cd web_app && python test_local.py
+   
+   # Test CLI
    python run_tests.py
    ```
 
@@ -74,23 +89,26 @@ A Python tool for compressing PowerPoint presentations, Word documents, video fi
 
 ```
 deck-compress/
-├── src/                          # Source code
-│   └── deck_compress.py         # Main CLI application module
-├── web_app/                      # Web application
+├── web_app/                      # Centralized application (CLI + Web)
 │   ├── main.py                  # FastAPI web application
-│   ├── run.py                   # Web app runner
-│   ├── requirements.txt         # Web dependencies
+│   ├── deck_compress.py         # Core compression logic (CLI + Web)
+│   ├── requirements.txt         # All dependencies
 │   ├── templates/
 │   │   └── index.html           # Web interface template
-│   └── static/
-│       └── uploads/             # Temporary file storage
+│   ├── static/
+│   │   └── uploads/             # Temporary file storage
+│   ├── .do/
+│   │   └── app.yaml             # DigitalOcean deployment config
+│   ├── Dockerfile               # Docker configuration
+│   ├── test_local.py            # Local testing script
+│   └── QUICK_DEPLOY.md          # Deployment guide
 ├── tests/                        # Test suite
 │   ├── __init__.py              # Test package init
 │   └── test_deck_compress.py    # Comprehensive test suite
 ├── docs/                         # Documentation
 │   └── index.html               # Landing page
 ├── config/                       # Configuration files
-│   └── requirements.txt         # Python dependencies
+│   └── requirements.txt         # CLI dependencies (legacy)
 ├── run_tests.py                 # Test runner script
 ├── pytest.ini                  # Pytest configuration
 ├── README.md                    # Project documentation
@@ -102,8 +120,11 @@ deck-compress/
 
 ### **Web Interface (Recommended)**
 ```bash
+# Navigate to web app directory
+cd web_app
+
 # Start the web application
-python web_app/run.py
+python main.py
 
 # Open http://localhost:8000 in your browser
 # Drag & drop files, enable Ultra Mode, and download compressed files
@@ -112,64 +133,64 @@ python web_app/run.py
 ### **CLI - Maximum Compression**
 ```bash
 # Ultra-aggressive compression for maximum size reduction (50-80%)
-python src/deck_compress.py presentation.pptx --ultra
+python web_app/deck_compress.py presentation.pptx --ultra
 
 # Ultra compression with custom settings
-python src/deck_compress.py slides.pptx --ultra -q 70 -w 1600
+python web_app/deck_compress.py slides.pptx --ultra -q 70 -w 1600
 ```
 
 ### **CLI - Standard Compression**
 ```bash
 # Compress PowerPoint with embedded media optimization
-python src/deck_compress.py presentation.pptx
+python web_app/deck_compress.py presentation.pptx
 
 # Compress video with quality control
-python src/deck_compress.py video.mp4 --video-crf 25
+python web_app/deck_compress.py video.mp4 --video-crf 25
 
 # Compress Word document with media optimization
-python src/deck_compress.py document.docx
+python web_app/deck_compress.py document.docx
 
 # Compress standalone image files
-python src/deck_compress.py image.png -q 85 -w 1920
+python web_app/deck_compress.py image.png -q 85 -w 1920
 ```
 
 ### **Batch Processing**
 ```bash
 # Ultra compression for all files in folder (maximum size reduction)
-python src/deck_compress.py /path/to/folder --folder --ultra
+python web_app/deck_compress.py /path/to/folder --folder --ultra
 
 # Compress all files over 50MB in a folder
-python src/deck_compress.py /path/to/folder --folder --min-size 50
+python web_app/deck_compress.py /path/to/folder --folder --min-size 50
 
 # Process all supported files in a folder
-python src/deck_compress.py /path/to/folder --folder
+python web_app/deck_compress.py /path/to/folder --folder
 ```
 
 ### **Compression Examples**
 ```bash
 # PowerPoint: 50-80% size reduction
-python src/deck_compress.py presentation.pptx --ultra
+python web_app/deck_compress.py presentation.pptx --ultra
 
 # Video: 40-60% size reduction with quality control
-python src/deck_compress.py video.mp4 --video-crf 25
+python web_app/deck_compress.py video.mp4 --video-crf 25
 
 # Images: 30-70% size reduction with progressive JPEG
-python src/deck_compress.py image.png --ultra -q 75
+python web_app/deck_compress.py image.png --ultra -q 75
 
 # Word: 40-70% size reduction with media optimization
-python src/deck_compress.py document.docx --ultra
+python web_app/deck_compress.py document.docx --ultra
 ```
 
 ### **Advanced Options**
 ```bash
 # Custom compression settings
-python src/deck_compress.py input.pptx -q 75 -w 1600 --video-crf 30
+python web_app/deck_compress.py input.pptx -q 75 -w 1600 --video-crf 30
 
 # Force overwrite existing files
-python src/deck_compress.py input.pptx --force
+python web_app/deck_compress.py input.pptx --force
 
 # Set timeout for processing (default: 300 seconds)
-python src/deck_compress.py input.pptx --timeout 600
+python web_app/deck_compress.py input.pptx --timeout 600
 ```
 
 ## ⚙️ Command Line Options
@@ -382,6 +403,35 @@ tests/
 - `integration` - Integration tests
 
 Total: **43+ unit tests** with comprehensive coverage of all functionality.
+
+## 🚀 Deployment
+
+### **DigitalOcean App Platform**
+The web application is ready for deployment to DigitalOcean App Platform:
+
+```bash
+# 1. Update GitHub repository URL in web_app/.do/app.yaml
+# 2. Deploy using doctl CLI
+doctl apps create --spec web_app/.do/app.yaml
+
+# 3. Or deploy via DigitalOcean Dashboard
+# Upload the web_app/.do/app.yaml file
+```
+
+### **Docker Deployment**
+```bash
+cd web_app
+docker build -t deck-compress-web .
+docker run -p 8080:8080 deck-compress-web
+```
+
+### **Local Development**
+```bash
+cd web_app
+pip install -r requirements.txt
+python main.py
+# Access at http://localhost:8000
+```
 
 ## 📋 Project Status
 

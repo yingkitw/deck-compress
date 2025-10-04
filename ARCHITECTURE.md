@@ -4,23 +4,26 @@
 
 ```
 deck-compress/
-├── src/                          # Source code
-│   └── deck_compress.py         # Main CLI application module
-├── web_app/                      # Web application
+├── web_app/                      # Centralized application (CLI + Web)
 │   ├── main.py                  # FastAPI web application
-│   ├── run.py                   # Web app runner
-│   ├── requirements.txt         # Web dependencies
+│   ├── deck_compress.py         # Core compression logic (CLI + Web)
+│   ├── requirements.txt         # All dependencies
 │   ├── templates/
 │   │   └── index.html           # Web interface template
-│   └── static/
-│       └── uploads/             # Temporary file storage
+│   ├── static/
+│   │   └── uploads/             # Temporary file storage
+│   ├── .do/
+│   │   └── app.yaml             # DigitalOcean deployment config
+│   ├── Dockerfile               # Docker configuration
+│   ├── test_local.py            # Local testing script
+│   └── QUICK_DEPLOY.md          # Deployment guide
 ├── tests/                        # Test suite
 │   ├── __init__.py              # Test package init
 │   └── test_deck_compress.py    # Comprehensive test suite
 ├── docs/                         # Documentation
 │   └── index.html               # Landing page
-├── config/                       # Configuration files
-│   └── requirements.txt         # Python dependencies
+├── config/                       # Configuration files (legacy)
+│   └── requirements.txt         # CLI dependencies
 ├── run_tests.py                 # Test runner script
 ├── pytest.ini                  # Pytest configuration
 ├── README.md                    # Project documentation
@@ -58,6 +61,8 @@ The application follows a modular architecture with clear separation of concerns
 #### 5. Web Application Module
 - **FastAPI Application**: `web_app/main.py`
 - **Web Interface**: `web_app/templates/index.html`
+- **Core Logic**: `web_app/deck_compress.py` (shared with CLI)
+- **Deployment**: `web_app/.do/app.yaml`, `web_app/Dockerfile`
 - **File Upload/Download**: REST API endpoints
 - **Progress Display**: Real-time progress tracking
 - **Static File Serving**: Upload directory management
@@ -65,6 +70,31 @@ The application follows a modular architecture with clear separation of concerns
 #### 6. CLI Interface
 - **`main()`**: Command-line argument parsing
 - **Argument validation**: File types, quality ranges, etc.
+
+## Centralized Architecture
+
+### Key Design Decisions
+
+The project has been restructured to use a **centralized architecture** where all core functionality is contained within the `web_app/` directory:
+
+#### **Benefits of Centralization:**
+- **Simplified Deployment**: Single directory contains everything needed
+- **Reduced Complexity**: No complex path resolution or module discovery
+- **Better Maintainability**: All related code in one location
+- **Easier Testing**: Local testing script validates entire application
+- **Cloud-Ready**: Optimized for DigitalOcean App Platform deployment
+
+#### **Shared Code Approach:**
+- **`deck_compress.py`**: Contains all compression logic
+- **CLI Interface**: Direct execution of `deck_compress.py`
+- **Web Interface**: Imports functions from `deck_compress.py`
+- **No Duplication**: Single source of truth for all functionality
+
+#### **Deployment Strategy:**
+- **DigitalOcean**: Uses `.do/app.yaml` configuration
+- **Docker**: Self-contained container with all dependencies
+- **Local Development**: Simple `python main.py` execution
+- **Testing**: `test_local.py` validates all components
 
 ## Data Flow
 
