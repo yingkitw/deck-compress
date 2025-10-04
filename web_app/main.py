@@ -158,7 +158,7 @@ async def download_file(filename: str, original_name: str = None):
 
 @app.get("/health")
 async def health_check():
-    return {"status": "healthy", "version": "1.0.0"}
+    return {"status": "healthy", "message": "Deck Compress Web App is running", "version": "1.0.0"}
 
 if __name__ == "__main__":
     import uvicorn

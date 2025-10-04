@@ -5,7 +5,7 @@ services:
   github:
     repo: your-username/deck-compress
     branch: main
-  run_command: uvicorn main:app --host 0.0.0.0 --port $PORT
+  run_command: uvicorn main:app --host 0.0.0.0 --port 8080
   environment_slug: python
   instance_count: 1
   instance_size_slug: basic-xxs
@@ -14,3 +14,4 @@ services:
     value: "8080"
   - key: PYTHONPATH
     value: "/workspace/src"
+  http_port: 8080
