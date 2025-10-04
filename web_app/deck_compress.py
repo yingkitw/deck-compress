@@ -700,6 +700,13 @@ def compress_video_with_timeout(input_path: Path, output_path: Path, crf: int, t
     try:
         import signal
         import subprocess
+        import shutil
+        
+        # Check if ffmpeg is available
+        if not shutil.which('ffmpeg'):
+            console.print("[yellow]Warning: ffmpeg not found. Video compression will be skipped.[/yellow]")
+            console.print("[blue]Tip: Install ffmpeg for video compression support.[/blue]")
+            return False
         
         def timeout_handler(signum, frame):
             raise TimeoutError(f"Video compression timed out after {timeout_seconds} seconds")
@@ -727,7 +734,8 @@ def compress_video_with_timeout(input_path: Path, output_path: Path, crf: int, t
         console.print(f"[yellow]Video compression timed out for {input_path.name}[/yellow]")
         return False
     except FileNotFoundError:
-        console.print("[red]Error: ffmpeg not found. Please install ffmpeg to compress videos.[/red]")
+        console.print("[yellow]Warning: ffmpeg not found. Video compression will be skipped.[/yellow]")
+        console.print("[blue]Tip: Install ffmpeg for video compression support.[/blue]")
         return False
     except Exception as e:
         console.print(f"[yellow]Warning: Could not compress video {input_path.name}: {e}[/yellow]")
@@ -819,6 +827,14 @@ def compress_image(image_data: bytes, original_format: str, quality: int = 85, m
 def compress_video(video_path: Path, output_path: Path, crf: int = 28) -> bool:
     """Compress video using ffmpeg with optimized settings for better compression."""
     try:
+        import shutil
+        
+        # Check if ffmpeg is available
+        if not shutil.which('ffmpeg'):
+            console.print("[yellow]Warning: ffmpeg not found. Video compression will be skipped.[/yellow]")
+            console.print("[blue]Tip: Install ffmpeg for video compression support.[/blue]")
+            return False
+            
         cmd = [
             'ffmpeg', '-i', str(video_path),
             '-c:v', 'libx264', '-crf', str(crf),
@@ -831,7 +847,8 @@ def compress_video(video_path: Path, output_path: Path, crf: int = 28) -> bool:
         result = subprocess.run(cmd, capture_output=True, text=True)
         return result.returncode == 0
     except FileNotFoundError:
-        console.print("[red]Error: ffmpeg not found. Please install ffmpeg to compress videos.[/red]")
+        console.print("[yellow]Warning: ffmpeg not found. Video compression will be skipped.[/yellow]")
+        console.print("[blue]Tip: Install ffmpeg for video compression support.[/blue]")
         return False
     except Exception as e:
         console.print(f"[yellow]Warning: Could not compress video: {e}[/yellow]")
