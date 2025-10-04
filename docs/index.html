@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Deck Compress - Document and Video Compression Tool</title>
+    <title>Deck Compress - File Compression Tool with Web Interface</title>
     <style>
         * {
             margin: 0;
@@ -269,7 +269,7 @@
     <div class="hero">
         <div class="container">
             <h1>Deck Compress</h1>
-            <p>Compress PowerPoint presentations, Word documents, and video files by optimizing embedded media and content. Achieve significant file size reductions while maintaining quality through intelligent image compression and video optimization.</p>
+            <p>Compress PowerPoint, Word, Video, and Image files with 50-80% size reduction. Available as both a modern web interface and powerful CLI tool with intelligent compression and quality optimization.</p>
             
             <div class="compression-stats">
                 <div class="stat">
@@ -294,27 +294,27 @@
 
             <div class="features">
                 <div class="feature">
+                    <div class="feature-icon">🌐</div>
+                    <h3>Web Interface</h3>
+                    <p>Modern drag-and-drop web interface with real-time progress tracking and professional design</p>
+                </div>
+
+                <div class="feature">
+                    <div class="feature-icon">⚡</div>
+                    <h3>CLI Tool</h3>
+                    <p>Powerful command-line interface for batch processing, automation, and server environments</p>
+                </div>
+
+                <div class="feature">
                     <div class="feature-icon">📊</div>
-                    <h3>PowerPoint</h3>
-                    <p>Compress embedded images and videos in .pptx/.ppt files with smart resizing and quality optimization</p>
-                </div>
-
-                <div class="feature">
-                    <div class="feature-icon">📝</div>
-                    <h3>Word Documents</h3>
-                    <p>Optimize media in .docx files while preserving document structure and formatting</p>
-                </div>
-
-                <div class="feature">
-                    <div class="feature-icon">🖼️</div>
-                    <h3>Image Compression</h3>
-                    <p>Smart JPEG and PNG compression with transparency preservation and quality optimization</p>
+                    <h3>PowerPoint & Word</h3>
+                    <p>Compress embedded media in .pptx/.ppt/.docx/.doc files with smart resizing and optimization</p>
                 </div>
 
                 <div class="feature">
                     <div class="feature-icon">🎥</div>
-                    <h3>Video Optimization</h3>
-                    <p>FFmpeg-powered video compression with H.264 encoding and quality settings</p>
+                    <h3>Videos & Images</h3>
+                    <p>Compress standalone video and image files with H.264 encoding and progressive JPEG</p>
                 </div>
             </div>
         </div>
@@ -337,6 +337,10 @@
                     <span class="step-number">3</span>
                     Install Python dependencies
                 </li>
+                <li>
+                    <span class="step-number">4</span>
+                    Choose your interface: Web or CLI
+                </li>
             </div>
 
             <div class="code-block">
@@ -348,8 +352,12 @@
                 <div class="comment"># Install Python dependencies</div>
                 <div class="command">pip install -r requirements.txt</div>
 
-                <div class="comment"># Verify installation</div>
-                <div class="command">python run_tests.py</div>
+                <div class="comment"># Web Interface (Recommended)</div>
+                <div class="command">python web_app/run.py</div>
+                <div class="command"># Open http://localhost:8000</div>
+
+                <div class="comment"># CLI Tool</div>
+                <div class="command">python src/deck_compress.py presentation.pptx --ultra</div>
             </div>
         </div>
     </section>
@@ -359,48 +367,43 @@
             <h2>How to Use</h2>
 
             <div class="code-block">
-                <div class="comment"># Compress PowerPoint with image optimization</div>
-                <div class="command">python src/deck_compress.py presentation.pptx</div>
+                <div class="comment"># Web Interface (Easiest)</div>
+                <div class="command">python web_app/run.py</div>
+                <div class="command"># Open http://localhost:8000 and drag & drop files</div>
 
-                <div class="comment"># Ultra-aggressive compression for maximum size reduction</div>
-                <div class="command">python src/deck_compress.py slides.pptx --ultra</div>
+                <div class="comment"># CLI - Ultra compression (50-80% reduction)</div>
+                <div class="command">python src/deck_compress.py presentation.pptx --ultra</div>
 
-                <div class="comment"># Compress with custom image quality (JPEG/PNG optimization)</div>
-                <div class="command">python src/deck_compress.py slides.pptx -q 85 -w 1920</div>
+                <div class="comment"># CLI - Standard compression</div>
+                <div class="command">python src/deck_compress.py slides.pptx</div>
 
-                <div class="comment"># Compress Word document with media optimization</div>
-                <div class="command">python src/deck_compress.py document.docx</div>
+                <div class="comment"># CLI - Batch processing</div>
+                <div class="command">python src/deck_compress.py /path/to/folder --folder --ultra</div>
 
-                <div class="comment"># Compress video with quality control</div>
+                <div class="comment"># CLI - Image and video files</div>
+                <div class="command">python src/deck_compress.py image.png --ultra</div>
                 <div class="command">python src/deck_compress.py video.mp4 --video-crf 25</div>
-
-                <div class="comment"># Batch process with image compression</div>
-                <div class="command">python src/deck_compress.py /path/to/folder --folder --min-size 50</div>
-
-                <div class="comment"># Show all compression options</div>
-                <div class="command">python src/deck_compress.py --help</div>
             </div>
 
-            <h3 style="margin-top: 40px; margin-bottom: 20px;">Compression Options</h3>
-            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; font-family: monospace;">
-                <div><strong>-q, --quality</strong> JPEG quality 1-100 (default: 85) - PNG uses optimization</div>
-                <div><strong>-w, --max-width</strong> Max image width in pixels (default: 1920) - Auto-resize large images</div>
-                <div><strong>--video-crf</strong> Video quality 0-51 (default: 28) - Lower = better quality</div>
-                <div><strong>--ultra</strong> Ultra-aggressive compression mode (smaller files, lower quality)</div>
-                <div><strong>--folder</strong> Process all supported files in folder</div>
-                <div><strong>--min-size</strong> Minimum file size in MB to process (default: 100)</div>
-                <div><strong>-f, --force</strong> Overwrite existing compressed files</div>
+            <h3 style="margin-top: 40px; margin-bottom: 20px;">Key Features</h3>
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px;">
+                <div style="margin-bottom: 15px;"><strong>🌐 Web Interface:</strong> Drag-and-drop files, real-time progress, professional UI</div>
+                <div style="margin-bottom: 15px;"><strong>⚡ CLI Tool:</strong> Batch processing, automation, server environments</div>
+                <div style="margin-bottom: 15px;"><strong>🎯 Ultra Mode:</strong> 50-80% size reduction with --ultra flag</div>
+                <div style="margin-bottom: 15px;"><strong>📁 Multi-format:</strong> PowerPoint, Word, Videos, Images (PPTX, DOCX, MP4, JPG, PNG, etc.)</div>
+                <div style="margin-bottom: 15px;"><strong>🔧 Smart Compression:</strong> Progressive JPEG, PNG optimization, H.264 video</div>
+                <div><strong>📊 Batch Processing:</strong> Process entire folders with size filtering</div>
             </div>
 
             <div style="margin-top: 32px; padding: 24px; background: #e8f5e8; border-radius: 8px; border-left: 4px solid #28a745;">
-                <h4 style="color: #155724; margin-bottom: 12px;">💡 Image Compression Tips</h4>
+                <h4 style="color: #155724; margin-bottom: 12px;">💡 Compression Tips</h4>
                 <ul style="color: #155724; margin: 0; padding-left: 20px;">
-                    <li><strong>JPEG:</strong> Quality 85-95 for presentations, 70-85 for smaller files</li>
-                    <li><strong>PNG:</strong> Preserves transparency, optimized for graphics and logos</li>
+                    <li><strong>Web Interface:</strong> Easiest way to compress files with visual progress</li>
                     <li><strong>Ultra Mode:</strong> Use --ultra for maximum compression (50-80% size reduction)</li>
                     <li><strong>Progressive JPEG:</strong> Better compression with progressive encoding</li>
-                    <li><strong>Auto-resize:</strong> Large images automatically resized to max-width</li>
-                    <li><strong>Format detection:</strong> Automatically handles JPEG, PNG, BMP, TIFF, GIF</li>
+                    <li><strong>PNG Optimization:</strong> Preserves transparency, optimized for graphics</li>
+                    <li><strong>Auto-resize:</strong> Large images automatically resized to optimal dimensions</li>
+                    <li><strong>Format Support:</strong> PowerPoint, Word, Videos, Images (PPTX, DOCX, MP4, JPG, PNG, etc.)</li>
                 </ul>
             </div>
         </div>

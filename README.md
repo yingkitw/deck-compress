@@ -36,10 +36,12 @@ A Python tool for compressing PowerPoint presentations, Word documents, video fi
 ## 🚀 Features
 
 - **Multi-format Support**: PowerPoint, Word, Video, and Image files
-- **Ultra Compression**: `--ultra` mode for maximum size reduction
+- **Ultra Compression**: `--ultra` mode for maximum size reduction (50-80%)
+- **Web Interface**: Modern, responsive web application with drag-and-drop
+- **CLI Tool**: Command-line interface for batch processing and automation
 - **Batch Processing**: Process entire folders with size filtering
-- **Progress Tracking**: Real-time compression progress with Rich
-- **Quality Control**: Customizable compression parameters
+- **Progress Tracking**: Real-time compression progress with visual feedback
+- **Smart Optimization**: Automatic format conversion and quality optimization
 - **Clean Architecture**: Well-organized, maintainable codebase
 - **Comprehensive Testing**: 43+ unit tests with full coverage
 
@@ -73,7 +75,15 @@ A Python tool for compressing PowerPoint presentations, Word documents, video fi
 ```
 deck-compress/
 ├── src/                          # Source code
-│   └── deck_compress.py         # Main application module
+│   └── deck_compress.py         # Main CLI application module
+├── web_app/                      # Web application
+│   ├── main.py                  # FastAPI web application
+│   ├── run.py                   # Web app runner
+│   ├── requirements.txt         # Web dependencies
+│   ├── templates/
+│   │   └── index.html           # Web interface template
+│   └── static/
+│       └── uploads/             # Temporary file storage
 ├── tests/                        # Test suite
 │   ├── __init__.py              # Test package init
 │   └── test_deck_compress.py    # Comprehensive test suite
@@ -90,7 +100,16 @@ deck-compress/
 
 ## 🚀 Usage
 
-### **Maximum Compression (Recommended)**
+### **Web Interface (Recommended)**
+```bash
+# Start the web application
+python web_app/run.py
+
+# Open http://localhost:8000 in your browser
+# Drag & drop files, enable Ultra Mode, and download compressed files
+```
+
+### **CLI - Maximum Compression**
 ```bash
 # Ultra-aggressive compression for maximum size reduction (50-80%)
 python src/deck_compress.py presentation.pptx --ultra
@@ -99,7 +118,7 @@ python src/deck_compress.py presentation.pptx --ultra
 python src/deck_compress.py slides.pptx --ultra -q 70 -w 1600
 ```
 
-### **Standard Compression**
+### **CLI - Standard Compression**
 ```bash
 # Compress PowerPoint with embedded media optimization
 python src/deck_compress.py presentation.pptx

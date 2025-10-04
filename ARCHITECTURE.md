@@ -5,7 +5,15 @@
 ```
 deck-compress/
 ├── src/                          # Source code
-│   └── deck_compress.py         # Main application module
+│   └── deck_compress.py         # Main CLI application module
+├── web_app/                      # Web application
+│   ├── main.py                  # FastAPI web application
+│   ├── run.py                   # Web app runner
+│   ├── requirements.txt         # Web dependencies
+│   ├── templates/
+│   │   └── index.html           # Web interface template
+│   └── static/
+│       └── uploads/             # Temporary file storage
 ├── tests/                        # Test suite
 │   ├── __init__.py              # Test package init
 │   └── test_deck_compress.py    # Comprehensive test suite
@@ -47,12 +55,20 @@ The application follows a modular architecture with clear separation of concerns
 - **Document processing**: `compress_doc()`, `process_pptx()`
 - **File processing**: `process_single_file()`, `process_folder()`
 
-#### 5. CLI Interface
+#### 5. Web Application Module
+- **FastAPI Application**: `web_app/main.py`
+- **Web Interface**: `web_app/templates/index.html`
+- **File Upload/Download**: REST API endpoints
+- **Progress Display**: Real-time progress tracking
+- **Static File Serving**: Upload directory management
+
+#### 6. CLI Interface
 - **`main()`**: Command-line argument parsing
 - **Argument validation**: File types, quality ranges, etc.
 
 ## Data Flow
 
+### CLI Data Flow
 ```mermaid
 graph TD
     A[CLI Input] --> B[File Type Detection]
@@ -61,21 +77,38 @@ graph TD
     C -->|PowerPoint| D[Extract PPTX]
     C -->|Word| E[Extract DOCX]
     C -->|Video| F[Direct Video Processing]
+    C -->|Image| G[Direct Image Processing]
     
-    D --> G[Find Media Files]
-    E --> G
+    D --> H[Find Media Files]
+    E --> H
     
-    G --> H{Media Type?}
-    H -->|Image| I[Compress Image]
-    H -->|Video| J[Compress Video]
+    H --> I{Media Type?}
+    I -->|Image| J[Compress Image]
+    I -->|Video| K[Compress Video]
     
-    I --> K[Repack Document]
-    J --> K
-    F --> L[Output Video]
+    J --> L[Repack Document]
+    K --> L
+    F --> M[Output Video]
+    G --> N[Output Image]
     
-    K --> M[Output Document]
-    L --> N[Compression Complete]
-    M --> N
+    L --> O[Output Document]
+    M --> P[Compression Complete]
+    N --> P
+    O --> P
+```
+
+### Web Application Data Flow
+```mermaid
+graph TD
+    A[Web Upload] --> B[File Validation]
+    B --> C[Save to Temp Directory]
+    C --> D[Process with CLI Engine]
+    D --> E[Compress File]
+    E --> F[Generate Download URL]
+    F --> G[Return Results to Frontend]
+    G --> H[Display Progress & Stats]
+    H --> I[Download Compressed File]
+    I --> J[Cleanup Temp Files]
 ```
 
 ## Error Handling Strategy
@@ -106,6 +139,29 @@ Simple, focused progress tracking:
 - **ImageMagick**: Advanced image processing
 - **LibreOffice**: Document conversion
 
+## Web Application Architecture
+
+### Frontend (HTML/CSS/JavaScript)
+- **Responsive Design**: Mobile-first approach with CSS Grid/Flexbox
+- **Drag & Drop**: Modern file upload with visual feedback
+- **Progress Tracking**: Real-time progress display with step-by-step updates
+- **Professional UI**: Clean, monochromatic design with smooth animations
+- **File Validation**: Client-side file type and size validation
+
+### Backend (FastAPI)
+- **REST API**: RESTful endpoints for file upload/download
+- **File Handling**: Secure file upload with temporary storage
+- **Error Handling**: Comprehensive error responses with proper HTTP status codes
+- **CORS Support**: Cross-origin resource sharing for web interface
+- **Static File Serving**: Efficient file serving for downloads
+
+### API Endpoints
+- `GET /`: Web interface homepage
+- `POST /upload/`: File upload and compression
+- `GET /download/{filename}`: Download compressed files
+- `GET /health`: Health check endpoint
+- `GET /docs`: Auto-generated API documentation
+
 ## Testing Architecture
 
 ### Test Organization
@@ -113,6 +169,7 @@ Simple, focused progress tracking:
 - **Integration tests**: End-to-end workflow testing
 - **Error scenario tests**: Failure case handling
 - **Tool validation tests**: External dependency checking
+- **Web API tests**: FastAPI endpoint testing
 
 ### Test Categories
 - `unit`: Basic unit tests
