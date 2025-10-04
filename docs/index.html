@@ -20,191 +20,111 @@
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 800px;
             margin: 0 auto;
             padding: 0 20px;
         }
 
         .hero {
             text-align: center;
-            padding: 80px 0;
+            padding: 60px 0;
             color: white;
         }
 
         .hero h1 {
-            font-size: 3.5rem;
+            font-size: 3rem;
             margin-bottom: 20px;
             font-weight: 700;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
         }
 
         .hero p {
-            font-size: 1.3rem;
+            font-size: 1.2rem;
             margin-bottom: 40px;
             opacity: 0.9;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .cta-buttons {
-            display: flex;
-            gap: 20px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        .btn {
-            display: inline-block;
-            padding: 15px 30px;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            border: 2px solid transparent;
-        }
-
-        .btn-primary {
-            background: #ff6b6b;
-            color: white;
-            border-color: #ff6b6b;
-        }
-
-        .btn-primary:hover {
-            background: #ff5252;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
-        }
-
-        .btn-secondary {
-            background: transparent;
-            color: white;
-            border-color: white;
-        }
-
-        .btn-secondary:hover {
-            background: white;
-            color: #667eea;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(255, 255, 255, 0.2);
         }
 
         .section {
-            padding: 80px 0;
             background: white;
-        }
-
-        .section:nth-child(even) {
-            background: #f8f9fa;
+            padding: 60px 0;
         }
 
         .section h2 {
             text-align: center;
-            font-size: 2.5rem;
-            margin-bottom: 60px;
+            font-size: 2.2rem;
+            margin-bottom: 40px;
             color: #2c3e50;
         }
 
         .features {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 40px;
-            margin-bottom: 60px;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
         }
 
         .feature {
             text-align: center;
-            padding: 30px;
+            padding: 25px;
             border-radius: 10px;
-            background: white;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            transition: transform 0.3s ease;
-        }
-
-        .feature:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            background: #f8f9fa;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
         }
 
         .feature-icon {
-            font-size: 3rem;
-            margin-bottom: 20px;
-            color: #667eea;
+            font-size: 2.5rem;
+            margin-bottom: 15px;
         }
 
         .feature h3 {
-            font-size: 1.5rem;
-            margin-bottom: 15px;
+            font-size: 1.3rem;
+            margin-bottom: 10px;
             color: #2c3e50;
         }
 
-        .feature p {
-            color: #666;
-        }
-
-        .usage {
-            background: #2c3e50;
-            color: white;
-            padding: 60px 0;
-        }
-
-        .usage h2 {
-            color: white;
-            text-align: center;
-            margin-bottom: 40px;
-        }
-
         .code-block {
-            background: #1a1a1a;
-            border-radius: 8px;
+            background: #2c3e50;
+            color: #ecf0f1;
             padding: 25px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
             margin: 20px 0;
             overflow-x: auto;
-            font-family: 'Courier New', monospace;
-            font-size: 0.9rem;
-            line-height: 1.5;
         }
 
-        .code-block .comment {
-            color: #6c757d;
+        .command {
+            margin: 8px 0;
+            color: #2ecc71;
         }
 
-        .code-block .command {
-            color: #28a745;
-        }
-
-        .code-block .output {
-            color: #ffc107;
-        }
-
-        .installation {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 40px;
-            align-items: center;
+        .comment {
+            color: #95a5a6;
+            font-style: italic;
+            margin: 8px 0;
         }
 
         .install-steps {
             list-style: none;
+            padding: 0;
         }
 
         .install-steps li {
             margin: 15px 0;
             padding: 15px;
-            background: white;
+            background: #f8f9fa;
             border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-left: 4px solid #667eea;
         }
 
-        .install-steps .step-number {
+        .step-number {
             display: inline-block;
-            width: 30px;
-            height: 30px;
+            width: 25px;
+            height: 25px;
             background: #667eea;
             color: white;
             border-radius: 50%;
             text-align: center;
-            line-height: 30px;
+            line-height: 25px;
             margin-right: 15px;
             font-weight: bold;
         }
@@ -216,45 +136,12 @@
             padding: 40px 0;
         }
 
-        .footer p {
-            margin-bottom: 20px;
-        }
-
-        .social-links {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-        }
-
-        .social-links a {
-            color: white;
-            text-decoration: none;
-            padding: 10px 15px;
-            border-radius: 5px;
-            background: rgba(255,255,255,0.1);
-            transition: background 0.3s ease;
-        }
-
-        .social-links a:hover {
-            background: rgba(255,255,255,0.2);
-        }
-
         @media (max-width: 768px) {
             .hero h1 {
-                font-size: 2.5rem;
+                font-size: 2.2rem;
             }
-
-            .installation {
-                grid-template-columns: 1fr;
-            }
-
             .features {
                 grid-template-columns: 1fr;
-            }
-
-            .cta-buttons {
-                flex-direction: column;
-                align-items: center;
             }
         }
     </style>
@@ -263,389 +150,108 @@
     <div class="hero">
         <div class="container">
             <h1>Deck Compress</h1>
-            <p>Powerful document and video compression tool that optimizes PowerPoint presentations, Word documents, and video files with intelligent media compression and batch processing capabilities. Now with clean architecture, comprehensive testing, and professional documentation.</p>
-
-            <div class="cta-buttons">
-                <a href="#installation" class="btn btn-primary">Get Started</a>
-                <a href="#features" class="btn btn-secondary">Learn More</a>
-            </div>
+            <p>Compress PowerPoint presentations, Word documents, and video files by optimizing embedded media and content.</p>
         </div>
     </div>
 
-    <section id="features" class="section">
+    <section class="section">
         <div class="container">
-            <h2>Key Features</h2>
+            <h2>What It Can Do</h2>
 
             <div class="features">
                 <div class="feature">
                     <div class="feature-icon">📊</div>
-                    <h3>Smart Compression</h3>
-                    <p>Intelligently compresses images and videos in PowerPoint presentations and Word documents while preserving quality and functionality.</p>
+                    <h3>PowerPoint Files</h3>
+                    <p>Compress images and videos in .pptx and .ppt files while preserving quality and functionality.</p>
+                </div>
+
+                <div class="feature">
+                    <div class="feature-icon">📝</div>
+                    <h3>Word Documents</h3>
+                    <p>Compress embedded media in .docx files while preserving document structure.</p>
                 </div>
 
                 <div class="feature">
                     <div class="feature-icon">🎥</div>
-                    <h3>Video Optimization</h3>
-                    <p>Compresses standalone video files using FFmpeg with customizable quality settings and H.264 encoding for optimal file sizes.</p>
+                    <h3>Video Files</h3>
+                    <p>Compress standalone video files (.mp4, .avi, .mov, .wmv, .mkv, .m4v, .flv, .webm) using FFmpeg.</p>
                 </div>
 
                 <div class="feature">
                     <div class="feature-icon">📁</div>
                     <h3>Batch Processing</h3>
-                    <p>Process entire folders of files with intelligent filtering by file size and type, perfect for bulk compression tasks.</p>
-                </div>
-
-                <div class="feature">
-                    <div class="feature-icon">⚡</div>
-                    <h3>Real-time Progress</h3>
-                    <p>Beautiful progress tracking with Rich terminal UI showing compression ratios, file sizes, and processing status in real-time.</p>
-                </div>
-
-                <div class="feature">
-                    <div class="feature-icon">🛠️</div>
-                    <h3>Flexible Quality Control</h3>
-                    <p>Fine-tune compression settings with customizable image quality, video CRF values, and maximum dimensions for optimal results.</p>
-                </div>
-
-                <div class="feature">
-                    <div class="feature-icon">🔒</div>
-                    <h3>Error Handling</h3>
-                    <p>Robust error handling with detailed reporting, graceful fallbacks, and comprehensive logging for reliable operation.</p>
-                </div>
-
-                <div class="feature">
-                    <div class="feature-icon">🏗️</div>
-                    <h3>Clean Architecture</h3>
-                    <p>Well-organized, maintainable codebase with modular design, comprehensive testing, and professional documentation.</p>
-                </div>
-
-                <div class="feature">
-                    <div class="feature-icon">🧪</div>
-                    <h3>Comprehensive Testing</h3>
-                    <p>43+ unit tests with full coverage, automated testing framework, and continuous quality assurance.</p>
+                    <p>Process entire folders of files with filtering by file size and type.</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <section class="usage">
+    <section class="section" style="background: #f8f9fa;">
         <div class="container">
-            <h2>Quick Start</h2>
+            <h2>Installation</h2>
+
+            <div class="install-steps">
+                <li>
+                    <span class="step-number">1</span>
+                    Install Python 3.8 or higher
+                </li>
+                <li>
+                    <span class="step-number">2</span>
+                    Install FFmpeg for video compression
+                </li>
+                <li>
+                    <span class="step-number">3</span>
+                    Install Python dependencies
+                </li>
+            </div>
 
             <div class="code-block">
-                <div class="comment"># Compress a PowerPoint presentation</div>
-                <div class="command">python src/deck_compress.py presentation.pptx</div>
+                <div class="comment"># Install FFmpeg</div>
+                <div class="command"># macOS: brew install ffmpeg</div>
+                <div class="command"># Ubuntu: sudo apt install ffmpeg</div>
+                <div class="command"># Windows: Download from ffmpeg.org</div>
 
-                <div class="comment"># Compress with custom quality settings</div>
-                <div class="command">python src/deck_compress.py presentation.pptx -q 80 -w 1920</div>
+                <div class="comment"># Install Python dependencies</div>
+                <div class="command">pip install -r requirements.txt</div>
+
+                <div class="comment"># Verify installation</div>
+                <div class="command">python run_tests.py</div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="container">
+            <h2>How to Use</h2>
+
+            <div class="code-block">
+                <div class="comment"># Compress a single PowerPoint file</div>
+                <div class="command">python src/deck_compress.py presentation.pptx</div>
 
                 <div class="comment"># Compress a video file</div>
                 <div class="command">python src/deck_compress.py video.mp4 --video-crf 25</div>
 
-                <div class="comment"># Batch process all files in a folder</div>
+                <div class="comment"># Compress a Word document</div>
+                <div class="command">python src/deck_compress.py document.docx</div>
+
+                <div class="comment"># Compress all files over 100MB in a folder</div>
                 <div class="command">python src/deck_compress.py /path/to/folder --folder --min-size 100</div>
 
-                <div class="comment"># Show help for all options</div>
+                <div class="comment"># Custom quality settings</div>
+                <div class="command">python src/deck_compress.py input.pptx -q 80 -w 1920 --video-crf 30</div>
+
+                <div class="comment"># Show all options</div>
                 <div class="command">python src/deck_compress.py --help</div>
             </div>
-        </div>
-    </section>
 
-    <section id="installation" class="section">
-        <div class="container">
-            <h2>Installation</h2>
-
-            <div class="installation">
-                <div>
-                    <h3>Prerequisites</h3>
-                    <ul class="install-steps">
-                        <li>
-                            <span class="step-number">1</span>
-                            Install Python 3.8 or higher
-                        </li>
-                        <li>
-                            <span class="step-number">2</span>
-                            Install required dependencies
-                        </li>
-                        <li>
-                            <span class="step-number">3</span>
-                            Install external tools for video compression
-                        </li>
-                    </ul>
-                </div>
-
-                <div>
-                    <h3>Commands</h3>
-                    <div class="code-block">
-                        <div class="comment"># Install Python dependencies</div>
-                        <div class="command">pip install -r requirements.txt</div>
-
-                        <div class="comment"># Install FFmpeg for video compression</div>
-                        <div class="command"># macOS: brew install ffmpeg</div>
-                        <div class="command"># Ubuntu: sudo apt install ffmpeg</div>
-                        <div class="command"># Windows: Download from ffmpeg.org</div>
-
-                        <div class="comment"># Run tests to verify installation</div>
-                        <div class="command">python run_tests.py</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section class="section">
-        <div class="container">
-            <h2>Project Structure</h2>
-
-            <div class="code-block" style="background: #f8f9fa; border-left: 4px solid #667eea;">
-                <div style="font-family: 'Courier New', monospace; line-height: 1.6; color: #2c3e50;">
-deck-compress/
-├── src/                          # Source code
-│   └── deck_compress.py         # Main application module
-├── tests/                        # Test suite
-│   ├── __init__.py              # Test package init
-│   └── test_deck_compress.py    # Comprehensive test suite
-├── docs/                         # Documentation
-│   └── index.html               # Landing page
-├── config/                       # Configuration files
-│   └── requirements.txt         # Python dependencies
-├── run_tests.py                 # Test runner script
-├── pytest.ini                  # Pytest configuration
-├── README.md                    # Project documentation
-├── ARCHITECTURE.md              # Architecture documentation
-└── TODO.md                      # Task tracking
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section class="section">
-        <div class="container">
-            <h2>Supported File Types</h2>
-
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px; margin: 40px 0;">
-
-                <div style="text-align: center; padding: 20px; background: #f8f9fa; border-radius: 8px;">
-                    <h3 style="color: #667eea; margin-bottom: 10px;">📊 PowerPoint</h3>
-                    <p style="font-size: 0.9rem; color: #666;">.pptx, .ppt files</p>
-                    <p style="font-size: 0.8rem; margin-top: 10px;">Extracts and compresses embedded images and videos</p>
-                </div>
-
-                <div style="text-align: center; padding: 20px; background: #f8f9fa; border-radius: 8px;">
-                    <h3 style="color: #667eea; margin-bottom: 10px;">📝 Word Documents</h3>
-                    <p style="font-size: 0.9rem; color: #666;">.docx, .doc files</p>
-                    <p style="font-size: 0.8rem; margin-top: 10px;">Compresses embedded media while preserving document structure</p>
-                </div>
-
-                <div style="text-align: center; padding: 20px; background: #f8f9fa; border-radius: 8px;">
-                    <h3 style="color: #667eea; margin-bottom: 10px;">🎥 Videos</h3>
-                    <p style="font-size: 0.9rem; color: #666;">.mp4, .avi, .mov, .wmv, .mkv, .m4v, .flv, .webm</p>
-                    <p style="font-size: 0.8rem; margin-top: 10px;">FFmpeg-powered compression with quality control</p>
-                </div>
-
-            </div>
-        </div>
-    </section>
-
-    <section class="usage">
-        <div class="container">
-            <h2>Advanced Usage</h2>
-
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: start;">
-
-                <div>
-                    <h3>Command Line Options</h3>
-                    <div class="code-block">
-                        <div class="command">python src/deck_compress.py [options] input_file</div>
-
-                        <div style="margin-top: 15px;">
-                            <div><code>-q, --quality</code> <span style="color: #6c757d;">JPEG quality (1-100, default: 85)</span></div>
-                            <div><code>-w, --max-width</code> <span style="color: #6c757d;">Maximum image width (default: 1920)</span></div>
-                            <div><code>--video-crf</code> <span style="color: #6c757d;">Video quality (0-51, default: 28)</span></div>
-                            <div><code>--folder</code> <span style="color: #6c757d;">Process all files in folder</span></div>
-                            <div><code>--min-size</code> <span style="color: #6c757d;">Minimum file size in MB (default: 100)</span></div>
-                            <div><code>-f, --force</code> <span style="color: #6c757d;">Overwrite existing files</span></div>
-                        </div>
-                    </div>
-                </div>
-
-                <div>
-                    <h3>Example Output</h3>
-                    <div class="code-block">
-                        <div class="output">$ python deck_compress.py presentation.pptx</div>
-                        <div class="output">Compressing: presentation.pptx (15.2 MB)</div>
-                        <div class="output">✓ Compressed: 45.2% reduction</div>
-                        <div class="output">Processing complete in 12.3s</div>
-                        <div class="output"></div>
-                        <div class="output">Compression Summary:</div>
-                        <div class="output">  Original: 15.2 MB</div>
-                        <div class="output">  Compressed: 8.3 MB</div>
-                        <div class="output">  Reduction: 45.2%</div>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-    </section>
-
-    <section class="section">
-        <div class="container">
-            <h2>Technical Details</h2>
-
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 40px;">
-
-                <div>
-                    <h3>Architecture</h3>
-                    <div class="code-block" style="text-align: center; font-size: 0.8rem;">
-                        <div>┌─────────────────┐    ┌─────────────────┐</div>
-                        <div>│   Input File    │───▶│  File Type?     │</div>
-                        <div>└─────────────────┘    └─────────────────┘</div>
-                        <div>                               │</div>
-                        <div>                    ┌──────────┼──────────┐</div>
-                        <div>                    │          │          │</div>
-                        <div>          ┌─────────▼──┐  ┌───▼──────────┐</div>
-                        <div>          │ PowerPoint  │  │ Word Docs    │</div>
-                        <div>          │ Processing  │  │ Processing   │</div>
-                        <div>          └─────────┬──┘  └──────────────┘</div>
-                        <div>                    │</div>
-                        <div>          ┌─────────▼─────────┐</div>
-                        <div>          │  Media Extraction │</div>
-                        <div>          │  & Compression    │</div>
-                        <div>          └─────────┬─────────┘</div>
-                        <div>                    │</div>
-                        <div>          ┌─────────▼─────────┐</div>
-                        <div>          │   Repack File     │</div>
-                        <div>          └─────────┬─────────┘</div>
-                        <div>                    │</div>
-                        <div>          ┌─────────▼─────────┐</div>
-                        <div>          │  Compressed File  │</div>
-                        <div>          └───────────────────┘</div>
-                    </div>
-                </div>
-
-                <div>
-                    <h3>Technology Stack</h3>
-                    <ul style="list-style: none; padding: 0;">
-                        <li style="margin: 10px 0; padding: 10px; background: #f8f9fa; border-radius: 5px;">
-                            <strong>Python 3.8+</strong> - Core language
-                        </li>
-                        <li style="margin: 10px 0; padding: 10px; background: #f8f9fa; border-radius: 5px;">
-                            <strong>Pillow (PIL)</strong> - Image processing and compression
-                        </li>
-                        <li style="margin: 10px 0; padding: 10px; background: #f8f9fa; border-radius: 5px;">
-                            <strong>Rich</strong> - Beautiful terminal UI and progress tracking
-                        </li>
-                        <li style="margin: 10px 0; padding: 10px; background: #f8f9fa; border-radius: 5px;">
-                            <strong>FFmpeg</strong> - Video compression and encoding
-                        </li>
-                    </ul>
-                </div>
-
-            </div>
-        </div>
-    </section>
-
-    <section class="section">
-        <div class="container">
-            <h2>Recent Improvements</h2>
-
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; margin: 40px 0;">
-
-                <div style="text-align: center; padding: 25px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 10px;">
-                    <div style="font-size: 2.5rem; margin-bottom: 15px;">🧹</div>
-                    <h3 style="color: white; margin-bottom: 15px;">Code Cleanup</h3>
-                    <p style="opacity: 0.9;">Removed all AI/translation dependencies, consolidated modules, and eliminated redundant code for a cleaner, more maintainable codebase.</p>
-                </div>
-
-                <div style="text-align: center; padding: 25px; background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; border-radius: 10px;">
-                    <div style="font-size: 2.5rem; margin-bottom: 15px;">🗂️</div>
-                    <h3 style="color: white; margin-bottom: 15px;">Project Organization</h3>
-                    <p style="opacity: 0.9;">Organized project into proper folder structure with src/, tests/, docs/, and config/ directories for better maintainability.</p>
-                </div>
-
-                <div style="text-align: center; padding: 25px; background: linear-gradient(135deg, #fd7e14 0%, #e83e8c 100%); color: white; border-radius: 10px;">
-                    <div style="font-size: 2.5rem; margin-bottom: 15px;">📚</div>
-                    <h3 style="color: white; margin-bottom: 15px;">Documentation</h3>
-                    <p style="opacity: 0.9;">Created comprehensive documentation including README, Architecture guide, and professional landing page.</p>
-                </div>
-
-                <div style="text-align: center; padding: 25px; background: linear-gradient(135deg, #6f42c1 0%, #e83e8c 100%); color: white; border-radius: 10px;">
-                    <div style="font-size: 2.5rem; margin-bottom: 15px;">🧪</div>
-                    <h3 style="color: white; margin-bottom: 15px;">Testing Framework</h3>
-                    <p style="opacity: 0.9;">Implemented comprehensive testing with 43+ unit tests, automated test runner, and continuous quality assurance.</p>
-                </div>
-
-            </div>
-        </div>
-    </section>
-
-    <section class="usage">
-        <div class="container">
-            <h2>Testing & Quality Assurance</h2>
-
-            <div style="text-align: center; margin: 40px 0;">
-                <div style="display: inline-block; background: rgba(255,255,255,0.1); padding: 30px; border-radius: 10px;">
-                    <h3 style="color: white; margin-bottom: 20px;">Comprehensive Test Suite</h3>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 20px; text-align: center;">
-                        <div>
-                            <div style="font-size: 2rem; color: #28a745;">43+</div>
-                            <div style="color: rgba(255,255,255,0.8);">Unit Tests</div>
-                        </div>
-                        <div>
-                            <div style="font-size: 2rem; color: #28a745;">85%+</div>
-                            <div style="color: rgba(255,255,255,0.8);">Code Coverage</div>
-                        </div>
-                        <div>
-                            <div style="font-size: 2rem; color: #28a745;">12</div>
-                            <div style="color: rgba(255,255,255,0.8);">Test Classes</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="code-block">
-                <div class="comment"># Run the complete test suite</div>
-                <div class="command">python run_tests.py</div>
-
-                <div class="comment"># Run specific test categories</div>
-                <div class="command">pytest tests/ -m "compression" -v</div>
-                <div class="command">pytest tests/ -m "error_handling" -v</div>
-
-                <div class="comment"># Check test coverage</div>
-                <div class="command">pytest tests/ --cov=src/deck_compress --cov-report=html</div>
-            </div>
-        </div>
-    </section>
-
-    <section class="section">
-        <div class="container">
-            <h2>Project Status</h2>
-            
-            <div style="text-align: center; margin: 40px 0;">
-                <div style="display: inline-block; background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 30px rgba(40, 167, 69, 0.3);">
-                    <div style="font-size: 3rem; margin-bottom: 20px;">✅</div>
-                    <h3 style="color: white; margin-bottom: 20px; font-size: 2rem;">PROJECT COMPLETE</h3>
-                    <p style="opacity: 0.9; font-size: 1.1rem; margin-bottom: 30px;">The deck-compress project is fully functional and ready for production use.</p>
-                    
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 20px; text-align: center; margin-top: 30px;">
-                        <div>
-                            <div style="font-size: 1.8rem; font-weight: bold;">Clean</div>
-                            <div style="opacity: 0.8; font-size: 0.9rem;">Codebase</div>
-                        </div>
-                        <div>
-                            <div style="font-size: 1.8rem; font-weight: bold;">43+</div>
-                            <div style="opacity: 0.8; font-size: 0.9rem;">Tests</div>
-                        </div>
-                        <div>
-                            <div style="font-size: 1.8rem; font-weight: bold;">100%</div>
-                            <div style="opacity: 0.8; font-size: 0.9rem;">Documented</div>
-                        </div>
-                        <div>
-                            <div style="font-size: 1.8rem; font-weight: bold;">Ready</div>
-                            <div style="opacity: 0.8; font-size: 0.9rem;">Production</div>
-                        </div>
-                    </div>
-                </div>
+            <h3 style="margin-top: 40px; margin-bottom: 20px;">Command Options</h3>
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; font-family: monospace;">
+                <div><strong>-q, --quality</strong> JPEG quality (1-100, default: 85)</div>
+                <div><strong>-w, --max-width</strong> Maximum image width (default: 1920)</div>
+                <div><strong>--video-crf</strong> Video quality (0-51, default: 28)</div>
+                <div><strong>--folder</strong> Process all files in folder</div>
+                <div><strong>--min-size</strong> Minimum file size in MB (default: 100)</div>
+                <div><strong>-f, --force</strong> Overwrite existing files</div>
             </div>
         </div>
     </section>
@@ -653,54 +259,11 @@ deck-compress/
     <footer class="footer">
         <div class="container">
             <h3>Deck Compress</h3>
-            <p>Streamline your document and video compression workflow with intelligent, automated processing.</p>
-
-            <div class="social-links">
-                <a href="#features">Features</a>
-                <a href="#installation">Installation</a>
-                <a href="README.md">README</a>
-                <a href="ARCHITECTURE.md">Architecture</a>
-                <a href="TODO.md">TODO</a>
-            </div>
-
-            <p style="margin-top: 30px; opacity: 0.8;">
-                Built with ❤️ for efficient document and media processing
+            <p>Simple, effective document and video compression</p>
+            <p style="margin-top: 20px; opacity: 0.8;">
+                Built with ❤️ for efficient file processing
             </p>
         </div>
     </footer>
-
-    <script>
-        // Add smooth scrolling for anchor links
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
-                }
-            });
-        });
-
-        // Add some interactive animations
-        const features = document.querySelectorAll('.feature');
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.style.opacity = '1';
-                    entry.target.style.transform = 'translateY(0)';
-                }
-            });
-        });
-
-        features.forEach(feature => {
-            feature.style.opacity = '0';
-            feature.style.transform = 'translateY(20px)';
-            feature.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-            observer.observe(feature);
-        });
-    </script>
 </body>
 </html>
