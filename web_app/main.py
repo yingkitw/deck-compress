@@ -54,8 +54,11 @@ async def upload_file(
     video_crf: int = Form(28),
     ultra_mode: str = Form("false")
 ):
+    console.print(f"[blue]POST /upload/ - File: {file.filename}, Size: {file.size if hasattr(file, 'size') else 'unknown'}[/blue]")
+    
     # Validate file
     if not file.filename:
+        console.print("[red]No file provided[/red]")
         raise HTTPException(status_code=400, detail="No file provided")
     
     # Validate file type
