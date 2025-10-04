@@ -585,17 +585,22 @@ def get_missing_tools() -> List[str]:
             missing.append(tool_name)
     return missing
 
-def compress_image(image_data: bytes, original_format: str, quality: int = 85, max_width: int = 1920) -> bytes:
+def compress_image(image_data: bytes, original_format: str, quality: int = 85, max_width: int = 1920, ultra_aggressive: bool = False) -> bytes:
     """Compress image data while maintaining aspect ratio and original format when possible."""
     try:
         with Image.open(io.BytesIO(image_data)) as img:
             original_format_upper = original_format.upper()
+            original_size = len(image_data)
 
-            # Resize if too large
-            if img.width > max_width:
-                ratio = max_width / img.width
+            # Resize if too large (more aggressive resizing in ultra mode)
+            target_width = max_width
+            if ultra_aggressive and img.width > max_width * 1.5:
+                target_width = int(max_width * 0.8)  # More aggressive resizing
+            
+            if img.width > target_width:
+                ratio = target_width / img.width
                 new_height = int(img.height * ratio)
-                img = img.resize((max_width, new_height), Image.Resampling.LANCZOS)
+                img = img.resize((target_width, new_height), Image.Resampling.LANCZOS)
 
             output = io.BytesIO()
 
@@ -604,33 +609,69 @@ def compress_image(image_data: bytes, original_format: str, quality: int = 85, m
                 # Convert to RGB if necessary for JPEG
                 if img.mode in ('RGBA', 'LA', 'P'):
                     img = img.convert('RGB')
-                img.save(output, format='JPEG', quality=quality, optimize=True)
+                # Use progressive JPEG for better compression
+                effective_quality = max(quality - 10, 30) if ultra_aggressive else quality
+                img.save(output, format='JPEG', quality=effective_quality, optimize=True, progressive=True)
             elif original_format_upper == 'PNG':
-                # Keep PNG format to preserve transparency if present
-                img.save(output, format='PNG', optimize=True)
+                if ultra_aggressive and img.mode in ('RGB', 'L'):
+                    # Convert PNG to JPEG in ultra mode if no transparency
+                    effective_quality = max(quality - 10, 30)
+                    img.save(output, format='JPEG', quality=effective_quality, optimize=True, progressive=True)
+                else:
+                    # Keep PNG format to preserve transparency if present
+                    # Use aggressive compression for PNG files
+                    img.save(output, format='PNG', optimize=True, compress_level=9)
             elif original_format_upper in ['BMP', 'TIFF', 'GIF']:
                 # Convert these formats to JPEG for better compression
                 if img.mode in ('RGBA', 'LA', 'P'):
                     img = img.convert('RGB')
-                img.save(output, format='JPEG', quality=quality, optimize=True)
+                effective_quality = max(quality - 10, 30) if ultra_aggressive else quality
+                img.save(output, format='JPEG', quality=effective_quality, optimize=True, progressive=True)
             else:
                 # Default to JPEG for unknown formats
                 if img.mode in ('RGBA', 'LA', 'P'):
                     img = img.convert('RGB')
-                img.save(output, format='JPEG', quality=quality, optimize=True)
+                effective_quality = max(quality - 10, 30) if ultra_aggressive else quality
+                img.save(output, format='JPEG', quality=effective_quality, optimize=True, progressive=True)
 
-            return output.getvalue()
+            compressed_data = output.getvalue()
+            
+            # If compression didn't help much, try more aggressive settings
+            if len(compressed_data) > original_size * 0.9:  # Less than 10% reduction
+                output2 = io.BytesIO()
+                if original_format_upper in ['JPEG', 'JPG']:
+                    # Try lower quality for JPEG
+                    lower_quality = max(quality - 15, 30)
+                    img.save(output2, format='JPEG', quality=lower_quality, optimize=True, progressive=True)
+                elif original_format_upper == 'PNG':
+                    # Try converting PNG to JPEG if no transparency
+                    if img.mode in ('RGB', 'L'):
+                        img.save(output2, format='JPEG', quality=quality, optimize=True, progressive=True)
+                    else:
+                        return compressed_data
+                else:
+                    return compressed_data
+                
+                # Use the more compressed version if it's significantly smaller
+                more_compressed = output2.getvalue()
+                if len(more_compressed) < len(compressed_data) * 0.8:  # 20% better
+                    return more_compressed
+            
+            return compressed_data
     except Exception as e:
         console.print(f"[yellow]Warning: Could not compress image: {e}[/yellow]")
         return image_data
 
 def compress_video(video_path: Path, output_path: Path, crf: int = 28) -> bool:
-    """Compress video using ffmpeg."""
+    """Compress video using ffmpeg with optimized settings for better compression."""
     try:
         cmd = [
             'ffmpeg', '-i', str(video_path),
             '-c:v', 'libx264', '-crf', str(crf),
-            '-c:a', 'aac', '-b:a', '128k',
+            '-preset', 'slow',  # Better compression, slower encoding
+            '-tune', 'film',    # Optimize for typical content
+            '-c:a', 'aac', '-b:a', '96k',  # Lower audio bitrate
+            '-movflags', '+faststart',  # Web optimization
             '-y', str(output_path)
         ]
         result = subprocess.run(cmd, capture_output=True, text=True)
@@ -646,7 +687,7 @@ def compress_standalone_video(input_path: Path, output_path: Path, crf: int = 28
     """Compress standalone video file."""
     return compress_video(input_path, output_path, crf)
 
-def compress_doc(input_path: Path, output_path: Path, image_quality: int = 85, max_width: int = 1920, video_crf: int = 28) -> bool:
+def compress_doc(input_path: Path, output_path: Path, image_quality: int = 85, max_width: int = 1920, video_crf: int = 28, ultra_aggressive: bool = False) -> bool:
     """Compress Word document by extracting and compressing embedded media with progress tracking."""
 
     progress = CompressionProgress(total_files=1, show_details=True)
@@ -685,7 +726,7 @@ def compress_doc(input_path: Path, output_path: Path, image_quality: int = 85, m
                                         original_data = f.read()
 
                                     original_format = media_file.suffix[1:]
-                                    compressed_data = compress_image(original_data, original_format, image_quality, max_width)
+                                    compressed_data = compress_image(original_data, original_format, image_quality, max_width, ultra_aggressive)
 
                                     with open(media_file, 'wb') as f:
                                         f.write(compressed_data)
@@ -734,7 +775,7 @@ def compress_doc(input_path: Path, output_path: Path, image_quality: int = 85, m
     finally:
         progress.finish_all()
 
-def process_pptx(input_path: Path, output_path: Path, image_quality: int, max_width: int, video_crf: int, progress: CompressionProgress = None):
+def process_pptx(input_path: Path, output_path: Path, image_quality: int, max_width: int, video_crf: int, progress: CompressionProgress = None, ultra_aggressive: bool = False):
     """Process PowerPoint file and compress embedded media."""
     if progress is None:
         progress = CompressionProgress(total_files=1, show_details=True)
@@ -784,7 +825,7 @@ def process_pptx(input_path: Path, output_path: Path, image_quality: int, max_wi
 
                     # Get original format from file extension
                     original_format = suffix[1:]  # Remove the dot
-                    compressed_data = compress_image(original_data, original_format, image_quality, max_width)
+                    compressed_data = compress_image(original_data, original_format, image_quality, max_width, ultra_aggressive)
 
                     # Save compressed image with original filename to preserve PowerPoint references
                     with open(media_file, 'wb') as f:
@@ -829,7 +870,24 @@ def process_pptx(input_path: Path, output_path: Path, image_quality: int, max_wi
         if progress is not None:
             progress.finish_all()
 
-def process_single_file(input_path: Path, output_path: Path, image_quality: int, max_width: int, video_crf: int) -> bool:
+def compress_standalone_image(input_path: Path, output_path: Path, image_quality: int = 85, max_width: int = 1920, ultra_aggressive: bool = False) -> bool:
+    """Compress standalone image file."""
+    try:
+        with open(input_path, 'rb') as f:
+            original_data = f.read()
+        
+        original_format = input_path.suffix[1:]  # Remove the dot
+        compressed_data = compress_image(original_data, original_format, image_quality, max_width, ultra_aggressive)
+        
+        with open(output_path, 'wb') as f:
+            f.write(compressed_data)
+        
+        return True
+    except Exception as e:
+        console.print(f"[yellow]Warning: Could not compress image {input_path.name}: {e}[/yellow]")
+        return False
+
+def process_single_file(input_path: Path, output_path: Path, image_quality: int, max_width: int, video_crf: int, ultra_aggressive: bool = False) -> bool:
     """Process a single file based on its type."""
     suffix = input_path.suffix.lower()
 
@@ -839,7 +897,7 @@ def process_single_file(input_path: Path, output_path: Path, image_quality: int,
 
     try:
         if suffix in ['.pptx', '.ppt']:
-            process_pptx(input_path, output_path, image_quality, max_width, video_crf, progress)
+            process_pptx(input_path, output_path, image_quality, max_width, video_crf, progress, ultra_aggressive)
             progress.finish_file(True, input_path.stat().st_size, output_path.stat().st_size)
             return True
         elif suffix in ['.mp4', '.avi', '.mov', '.wmv', '.mkv', '.m4v', '.flv', '.webm']:
@@ -847,7 +905,11 @@ def process_single_file(input_path: Path, output_path: Path, image_quality: int,
             progress.finish_file(success, input_path.stat().st_size, output_path.stat().st_size if success else 0)
             return success
         elif suffix in ['.docx', '.doc']:
-            success = compress_doc(input_path, output_path, image_quality, max_width, video_crf)
+            success = compress_doc(input_path, output_path, image_quality, max_width, video_crf, ultra_aggressive)
+            progress.finish_file(success, input_path.stat().st_size, output_path.stat().st_size if success else 0)
+            return success
+        elif suffix in ['.jpg', '.jpeg', '.png', '.bmp', '.tiff', '.gif']:
+            success = compress_standalone_image(input_path, output_path, image_quality, max_width, ultra_aggressive)
             progress.finish_file(success, input_path.stat().st_size, output_path.stat().st_size if success else 0)
             return success
         else:
@@ -874,7 +936,8 @@ def process_folder(folder_path: Path, min_size_mb: int, image_quality: int, max_
     supported_extensions = [
         "*.pptx", "*.ppt",  # PowerPoint
         "*.mp4", "*.avi", "*.mov", "*.wmv", "*.mkv", "*.m4v", "*.flv", "*.webm",  # Video
-        "*.docx", "*.doc"  # Word
+        "*.docx", "*.doc",  # Word
+        "*.jpg", "*.jpeg", "*.png", "*.bmp", "*.tiff", "*.gif"  # Images
     ]
 
     all_files = []
@@ -883,7 +946,7 @@ def process_folder(folder_path: Path, min_size_mb: int, image_quality: int, max_
 
     if not all_files:
         console.print(f"[yellow]No supported files found in {folder_path}[/yellow]")
-        console.print("[blue]Supported formats: PPTX, PPT, MP4, AVI, MOV, WMV, MKV, M4V, FLV, WEBM, DOCX, DOC[/blue]")
+        console.print("[blue]Supported formats: PPTX, PPT, MP4, AVI, MOV, WMV, MKV, M4V, FLV, WEBM, DOCX, DOC, JPG, JPEG, PNG, BMP, TIFF, GIF[/blue]")
         return 0
 
     # Filter files by size
@@ -995,7 +1058,7 @@ def process_folder(folder_path: Path, min_size_mb: int, image_quality: int, max_
 def main():
     """Main CLI function."""
     parser = argparse.ArgumentParser(
-        description="Compress images, videos, and documents (PowerPoint, Word, Video files)",
+        description="Compress images, videos, and documents (PowerPoint, Word, Video, Image files)",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
@@ -1007,6 +1070,12 @@ Examples:
 
   # Compress a Word document
   python deck_compress.py document.docx
+
+  # Compress an image file
+  python deck_compress.py image.png -q 85 -w 1920
+
+  # Ultra-aggressive compression for maximum size reduction
+  python deck_compress.py presentation.pptx --ultra
 
   # Compress all files over 100MB in a folder
   python deck_compress.py /path/to/folder --folder --min-size 100
@@ -1064,6 +1133,11 @@ Examples:
         default=300,
         help="Timeout in seconds for processing each file (default: 300)"
     )
+    parser.add_argument(
+        "--ultra",
+        action="store_true",
+        help="Ultra-aggressive compression mode (smaller files, lower quality)"
+    )
 
     args = parser.parse_args()
 
@@ -1086,10 +1160,10 @@ Examples:
         return process_folder(input_path, args.min_size, args.quality, args.max_width, args.video_crf, args.force, args.timeout)
 
     # Single file mode - check for supported file types
-    supported_extensions = ['.pptx', '.ppt', '.mp4', '.avi', '.mov', '.wmv', '.mkv', '.m4v', '.flv', '.webm', '.docx', '.doc']
+    supported_extensions = ['.pptx', '.ppt', '.mp4', '.avi', '.mov', '.wmv', '.mkv', '.m4v', '.flv', '.webm', '.docx', '.doc', '.jpg', '.jpeg', '.png', '.bmp', '.tiff', '.gif']
     if input_path.suffix.lower() not in supported_extensions:
         console.print(f"[red]Error: Unsupported file type '{input_path.suffix}'[/red]")
-        console.print("[blue]Supported formats: PPTX, PPT, MP4, AVI, MOV, WMV, MKV, M4V, FLV, WEBM, DOCX, DOC[/blue]")
+        console.print("[blue]Supported formats: PPTX, PPT, MP4, AVI, MOV, WMV, MKV, M4V, FLV, WEBM, DOCX, DOC, JPG, JPEG, PNG, BMP, TIFF, GIF[/blue]")
         return 1
 
     # Validate quality range
@@ -1123,7 +1197,7 @@ Examples:
     console.print()
 
     original_size = input_path.stat().st_size
-    success = process_single_file(input_path, output_path, args.quality, args.max_width, args.video_crf)
+    success = process_single_file(input_path, output_path, args.quality, args.max_width, args.video_crf, args.ultra)
 
     if success and output_path.exists():
         compressed_size = output_path.stat().st_size

@@ -71,21 +71,21 @@
 
         .hero {
             text-align: center;
-            padding: 80px 0;
+            padding: 60px 0;
             background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
         }
 
         .hero h1 {
-            font-size: 3.5rem;
-            margin-bottom: 24px;
+            font-size: 3rem;
+            margin-bottom: 20px;
             font-weight: 800;
             color: #1a1a1a;
             letter-spacing: -0.02em;
         }
 
         .hero p {
-            font-size: 1.3rem;
-            margin-bottom: 32px;
+            font-size: 1.2rem;
+            margin-bottom: 24px;
             color: #666;
             max-width: 600px;
             margin-left: auto;
@@ -93,11 +93,29 @@
             line-height: 1.6;
         }
 
+        .hero-image {
+            text-align: center;
+            margin: 32px 0;
+        }
+
+        .hero-image img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+            transition: transform 0.3s ease;
+        }
+
+        .hero-image img:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.18);
+        }
+
         .compression-stats {
             display: flex;
             justify-content: center;
-            gap: 48px;
-            margin-top: 48px;
+            gap: 40px;
+            margin-top: 32px;
             flex-wrap: wrap;
         }
 
@@ -120,26 +138,26 @@
 
         .section {
             background: white;
-            padding: 60px 0;
+            padding: 48px 0;
         }
 
         .section h2 {
             text-align: center;
-            font-size: 2.2rem;
-            margin-bottom: 40px;
+            font-size: 2rem;
+            margin-bottom: 32px;
             color: #2c3e50;
         }
 
         .features {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 30px;
-            margin-bottom: 40px;
+            gap: 24px;
+            margin-bottom: 32px;
         }
 
         .feature {
             text-align: center;
-            padding: 32px 24px;
+            padding: 24px 20px;
             border-radius: 12px;
             background: #fff;
             border: 1px solid #f0f0f0;
@@ -190,8 +208,8 @@
         }
 
         .install-steps li {
-            margin: 16px 0;
-            padding: 20px;
+            margin: 12px 0;
+            padding: 16px;
             background: #fff;
             border-radius: 12px;
             border-left: 4px solid #1a1a1a;
@@ -216,7 +234,7 @@
             background: #1a1a1a;
             color: #999;
             text-align: center;
-            padding: 48px 0;
+            padding: 32px 0;
         }
 
         .footer h3 {
@@ -227,17 +245,17 @@
 
         @media (max-width: 768px) {
             .hero h1 {
-                font-size: 2.5rem;
+                font-size: 2.2rem;
             }
             .features {
                 grid-template-columns: 1fr;
             }
             .nav {
                 flex-direction: column;
-                gap: 20px;
+                gap: 16px;
             }
             .nav-links {
-                gap: 20px;
+                gap: 16px;
                 flex-wrap: wrap;
                 justify-content: center;
             }
@@ -246,7 +264,13 @@
                 font-size: 0.9rem;
             }
             .compression-stats {
-                gap: 32px;
+                gap: 24px;
+            }
+            .hero-image {
+                margin: 24px 0;
+            }
+            .hero-image img {
+                border-radius: 8px;
             }
         }
     </style>
@@ -260,7 +284,6 @@
                     <a href="#features">Features</a>
                     <a href="#install">Install</a>
                     <a href="#usage">Usage</a>
-                    <a href="README.md">README</a>
                 </div>
             </nav>
         </div>
@@ -269,19 +292,23 @@
     <div class="hero">
         <div class="container">
             <h1>Deck Compress</h1>
-            <p>Compress PowerPoint presentations, Word documents, and video files by optimizing embedded media and content. Achieve significant file size reductions while maintaining quality.</p>
+            <p>Compress PowerPoint presentations, Word documents, and video files by optimizing embedded media and content. Achieve significant file size reductions while maintaining quality through intelligent image compression and video optimization.</p>
+            
+            <div class="hero-image">
+                <img src="deck_compress.png" alt="Deck Compress Tool Interface">
+            </div>
             
             <div class="compression-stats">
                 <div class="stat">
-                    <span class="stat-number">40-70%</span>
+                    <span class="stat-number">50-80%</span>
                     <span class="stat-label">Size Reduction</span>
                 </div>
                 <div class="stat">
-                    <span class="stat-number">85%</span>
+                    <span class="stat-number">90%</span>
                     <span class="stat-label">Quality Preserved</span>
                 </div>
                 <div class="stat">
-                    <span class="stat-number">10x</span>
+                    <span class="stat-number">15x</span>
                     <span class="stat-label">Faster Sharing</span>
                 </div>
             </div>
@@ -296,25 +323,25 @@
                 <div class="feature">
                     <div class="feature-icon">📊</div>
                     <h3>PowerPoint</h3>
-                    <p>Compress .pptx and .ppt files</p>
+                    <p>Compress embedded images and videos in .pptx/.ppt files with smart resizing and quality optimization</p>
                 </div>
 
                 <div class="feature">
                     <div class="feature-icon">📝</div>
                     <h3>Word Documents</h3>
-                    <p>Compress .docx files</p>
+                    <p>Optimize media in .docx files while preserving document structure and formatting</p>
+                </div>
+
+                <div class="feature">
+                    <div class="feature-icon">🖼️</div>
+                    <h3>Image Compression</h3>
+                    <p>Smart JPEG and PNG compression with transparency preservation and quality optimization</p>
                 </div>
 
                 <div class="feature">
                     <div class="feature-icon">🎥</div>
-                    <h3>Videos</h3>
-                    <p>Compress video files (.mp4, .avi, .mov, etc.)</p>
-                </div>
-
-                <div class="feature">
-                    <div class="feature-icon">📁</div>
-                    <h3>Batch Process</h3>
-                    <p>Process entire folders</p>
+                    <h3>Video Optimization</h3>
+                    <p>FFmpeg-powered video compression with H.264 encoding and quality settings</p>
                 </div>
             </div>
         </div>
@@ -359,33 +386,49 @@
             <h2>How to Use</h2>
 
             <div class="code-block">
-                <div class="comment"># Compress a single PowerPoint file</div>
+                <div class="comment"># Compress PowerPoint with image optimization</div>
                 <div class="command">python src/deck_compress.py presentation.pptx</div>
 
-                <div class="comment"># Compress a video file</div>
-                <div class="command">python src/deck_compress.py video.mp4 --video-crf 25</div>
+                <div class="comment"># Ultra-aggressive compression for maximum size reduction</div>
+                <div class="command">python src/deck_compress.py slides.pptx --ultra</div>
 
-                <div class="comment"># Compress a Word document</div>
+                <div class="comment"># Compress with custom image quality (JPEG/PNG optimization)</div>
+                <div class="command">python src/deck_compress.py slides.pptx -q 85 -w 1920</div>
+
+                <div class="comment"># Compress Word document with media optimization</div>
                 <div class="command">python src/deck_compress.py document.docx</div>
 
-                <div class="comment"># Compress all files over 100MB in a folder</div>
-                <div class="command">python src/deck_compress.py /path/to/folder --folder --min-size 100</div>
+                <div class="comment"># Compress video with quality control</div>
+                <div class="command">python src/deck_compress.py video.mp4 --video-crf 25</div>
 
-                <div class="comment"># Custom quality settings</div>
-                <div class="command">python src/deck_compress.py input.pptx -q 80 -w 1920 --video-crf 30</div>
+                <div class="comment"># Batch process with image compression</div>
+                <div class="command">python src/deck_compress.py /path/to/folder --folder --min-size 50</div>
 
-                <div class="comment"># Show all options</div>
+                <div class="comment"># Show all compression options</div>
                 <div class="command">python src/deck_compress.py --help</div>
             </div>
 
-            <h3 style="margin-top: 40px; margin-bottom: 20px;">Command Options</h3>
+            <h3 style="margin-top: 40px; margin-bottom: 20px;">Compression Options</h3>
             <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; font-family: monospace;">
-                <div><strong>-q, --quality</strong> JPEG quality (1-100, default: 85)</div>
-                <div><strong>-w, --max-width</strong> Maximum image width (default: 1920)</div>
-                <div><strong>--video-crf</strong> Video quality (0-51, default: 28)</div>
-                <div><strong>--folder</strong> Process all files in folder</div>
-                <div><strong>--min-size</strong> Minimum file size in MB (default: 100)</div>
-                <div><strong>-f, --force</strong> Overwrite existing files</div>
+                <div><strong>-q, --quality</strong> JPEG quality 1-100 (default: 85) - PNG uses optimization</div>
+                <div><strong>-w, --max-width</strong> Max image width in pixels (default: 1920) - Auto-resize large images</div>
+                <div><strong>--video-crf</strong> Video quality 0-51 (default: 28) - Lower = better quality</div>
+                <div><strong>--ultra</strong> Ultra-aggressive compression mode (smaller files, lower quality)</div>
+                <div><strong>--folder</strong> Process all supported files in folder</div>
+                <div><strong>--min-size</strong> Minimum file size in MB to process (default: 100)</div>
+                <div><strong>-f, --force</strong> Overwrite existing compressed files</div>
+            </div>
+
+            <div style="margin-top: 32px; padding: 24px; background: #e8f5e8; border-radius: 8px; border-left: 4px solid #28a745;">
+                <h4 style="color: #155724; margin-bottom: 12px;">💡 Image Compression Tips</h4>
+                <ul style="color: #155724; margin: 0; padding-left: 20px;">
+                    <li><strong>JPEG:</strong> Quality 85-95 for presentations, 70-85 for smaller files</li>
+                    <li><strong>PNG:</strong> Preserves transparency, optimized for graphics and logos</li>
+                    <li><strong>Ultra Mode:</strong> Use --ultra for maximum compression (50-80% size reduction)</li>
+                    <li><strong>Progressive JPEG:</strong> Better compression with progressive encoding</li>
+                    <li><strong>Auto-resize:</strong> Large images automatically resized to max-width</li>
+                    <li><strong>Format detection:</strong> Automatically handles JPEG, PNG, BMP, TIFF, GIF</li>
+                </ul>
             </div>
         </div>
     </section>
