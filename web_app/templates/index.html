@@ -405,6 +405,12 @@
             color: #721c24;
         }
 
+        .result.warning {
+            background: #fff3cd;
+            border-color: #ffeaa7;
+            color: #856404;
+        }
+
         .result h3 {
             margin-bottom: 10px;
         }
@@ -663,6 +669,19 @@
                 fileName.textContent = file.name;
                 fileSize.textContent = formatFileSize(file.size);
                 fileInfo.style.display = 'block';
+                
+                // Show warnings for large files
+                const fileSizeMB = file.size / (1024 * 1024);
+                if (fileSizeMB > 500) {
+                    showResult('File too large! Maximum size is 500MB. Please use the CLI version for larger files.', 'error');
+                    submitBtn.disabled = true;
+                } else if (fileSizeMB > 100) {
+                    showResult(`Large file detected (${fileSizeMB.toFixed(1)}MB). This may take several minutes to process. Please be patient.`, 'warning');
+                    submitBtn.disabled = false;
+                } else {
+                    result.style.display = 'none';
+                    submitBtn.disabled = false;
+                }
             }
         }
 
@@ -690,7 +709,7 @@
             formData.append('quality', '85'); // Default quality
             formData.append('max_width', '1920'); // Default max width
             formData.append('video_crf', '28'); // Default video quality
-            formData.append('ultra_mode', document.getElementById('ultraMode').checked);
+            formData.append('ultra_mode', document.getElementById('ultraMode').checked ? 'true' : 'false');
 
             // Show progress
             progress.style.display = 'block';
@@ -714,7 +733,20 @@
                     showResult(data.message || 'Compression failed', 'error');
                 }
             } catch (error) {
-                showResult('Error: ' + error.message, 'error');
+                let errorMessage = 'Error: ' + error.message;
+                
+                // Provide more helpful error messages
+                if (error.message.includes('413')) {
+                    errorMessage = 'File too large! Maximum size is 500MB. Please use the CLI version for larger files.';
+                } else if (error.message.includes('timeout')) {
+                    errorMessage = 'Processing timed out. The file may be too large or complex. Please try with a smaller file or use the CLI version.';
+                } else if (error.message.includes('NetworkError')) {
+                    errorMessage = 'Network error. Please check your connection and try again.';
+                } else if (error.message.includes('Failed to fetch')) {
+                    errorMessage = 'Server error. Please try again later or use the CLI version.';
+                }
+                
+                showResult(errorMessage, 'error');
             } finally {
                 progress.style.display = 'none';
                 submitBtn.disabled = false;
@@ -722,14 +754,42 @@
         });
 
         function simulateProgress() {
-            const progressSteps = [
-                { text: "Analyzing file...", percent: 10 },
-                { text: "Extracting media...", percent: 25 },
-                { text: "Compressing images...", percent: 50 },
-                { text: "Optimizing videos...", percent: 75 },
-                { text: "Finalizing compression...", percent: 90 },
-                { text: "Almost done...", percent: 95 }
-            ];
+            const file = fileInput.files[0];
+            const fileSizeMB = file ? file.size / (1024 * 1024) : 0;
+            
+            // Adjust progress steps based on file size
+            let progressSteps;
+            if (fileSizeMB > 100) {
+                // Large file - more detailed progress
+                progressSteps = [
+                    { text: "Analyzing large file...", percent: 5 },
+                    { text: "Extracting PowerPoint...", percent: 15 },
+                    { text: "Scanning media files...", percent: 25 },
+                    { text: "Compressing images (this may take a while)...", percent: 40 },
+                    { text: "Optimizing videos...", percent: 60 },
+                    { text: "Processing remaining media...", percent: 80 },
+                    { text: "Finalizing compression...", percent: 90 },
+                    { text: "Almost done...", percent: 95 }
+                ];
+            } else if (fileSizeMB > 50) {
+                // Medium file
+                progressSteps = [
+                    { text: "Analyzing file...", percent: 10 },
+                    { text: "Extracting media...", percent: 25 },
+                    { text: "Compressing images...", percent: 50 },
+                    { text: "Optimizing videos...", percent: 75 },
+                    { text: "Finalizing compression...", percent: 90 },
+                    { text: "Almost done...", percent: 95 }
+                ];
+            } else {
+                // Small file - faster progress
+                progressSteps = [
+                    { text: "Analyzing file...", percent: 20 },
+                    { text: "Compressing media...", percent: 60 },
+                    { text: "Finalizing...", percent: 90 },
+                    { text: "Almost done...", percent: 95 }
+                ];
+            }
             
             let currentStep = 0;
             
@@ -741,8 +801,9 @@
                     progressDetails.textContent = `Progress: ${step.percent}%`;
                     currentStep++;
                     
-                    // Update every 800ms for smooth progress
-                    setTimeout(updateProgress, 800);
+                    // Adjust timing based on file size
+                    const delay = fileSizeMB > 100 ? 1200 : fileSizeMB > 50 ? 1000 : 800;
+                    setTimeout(updateProgress, delay);
                 }
             };
             

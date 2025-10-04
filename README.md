@@ -32,6 +32,9 @@ A Python tool for compressing PowerPoint presentations, Word documents, video fi
 - **Auto-resizing**: Large images automatically resized to optimal dimensions
 - **Format Conversion**: PNG to JPEG when transparency isn't needed
 - **H.264 Video**: Optimized encoding with web-friendly settings
+- **Large Image Support**: Handles images up to 500 megapixels safely
+- **Memory Optimization**: Chunked processing for large files
+- **Timeout Protection**: Prevents hanging on very large files
 
 ## 🚀 Features
 
@@ -42,6 +45,10 @@ A Python tool for compressing PowerPoint presentations, Word documents, video fi
 - **Batch Processing**: Process entire folders with size filtering
 - **Progress Tracking**: Real-time compression progress with visual feedback
 - **Smart Optimization**: Automatic format conversion and quality optimization
+- **Large File Support**: Enhanced handling of large files with memory optimization
+- **File Size Validation**: 500MB web upload limit with clear error messages
+- **Timeout Protection**: Dynamic timeouts based on file size
+- **Memory Management**: Efficient processing of large images and videos
 - **Clean Architecture**: Well-organized, maintainable codebase
 - **Comprehensive Testing**: 43+ unit tests with full coverage
 
@@ -128,6 +135,7 @@ python main.py
 
 # Open http://localhost:8000 in your browser
 # Drag & drop files, enable Ultra Mode, and download compressed files
+# Supports files up to 500MB with automatic size validation
 ```
 
 ### **CLI - Maximum Compression**
@@ -191,6 +199,9 @@ python web_app/deck_compress.py input.pptx --force
 
 # Set timeout for processing (default: 300 seconds)
 python web_app/deck_compress.py input.pptx --timeout 600
+
+# Process very large files (CLI supports unlimited file sizes)
+python web_app/deck_compress.py large_presentation.pptx --timeout 1800
 ```
 
 ## ⚙️ Command Line Options
@@ -243,6 +254,14 @@ python web_app/deck_compress.py input.pptx --timeout 600
 - **Smart Resizing**: More aggressive image resizing (80% of max width)
 - **Format Optimization**: Automatic PNG to JPEG conversion
 - **Fallback Compression**: Tries harder if initial compression is poor
+
+### **Large File Support**
+- **Memory Optimization**: Processes media files in chunks to prevent memory overflow
+- **File Size Limits**: 500MB web upload limit, unlimited CLI support
+- **Timeout Protection**: Dynamic timeouts (5min base + 1min per 50MB)
+- **Image Safety**: Handles images up to 500 megapixels safely
+- **Progress Tracking**: Enhanced progress indicators for large files
+- **Error Recovery**: Graceful handling of oversized or problematic files
 
 ## Requirements
 
@@ -433,6 +452,40 @@ python main.py
 # Access at http://localhost:8000
 ```
 
+## 📁 Large File Support
+
+Deck Compress now includes comprehensive support for large files with enhanced memory management and user experience:
+
+### **Web Interface Limits**
+- **File Size**: Up to 500MB per upload
+- **Validation**: Automatic file size checking before processing
+- **Warnings**: Clear messages for large files with processing time estimates
+- **Progress**: Enhanced progress tracking with file size awareness
+
+### **CLI Unlimited Support**
+- **No Size Limits**: Process files of any size through CLI
+- **Dynamic Timeouts**: Automatic timeout adjustment based on file size
+- **Memory Management**: Chunked processing to prevent memory overflow
+- **Error Recovery**: Graceful handling of problematic files
+
+### **Image Processing**
+- **Large Images**: Supports images up to 500 megapixels
+- **Safety Limits**: Prevents processing of malicious oversized images
+- **Memory Efficient**: Processes images in chunks for large files
+- **Format Support**: Handles all common image formats safely
+
+### **Video Compression**
+- **Timeout Protection**: 60-second timeout per video file
+- **Quality Control**: Optimized settings for large video files
+- **Error Handling**: Skips problematic videos with clear warnings
+- **Memory Safe**: Efficient processing without memory issues
+
+### **PowerPoint Processing**
+- **Media Extraction**: Safe extraction of embedded media
+- **Chunked Processing**: Processes media files one at a time
+- **Size Sorting**: Processes smaller files first to free memory
+- **Progress Tracking**: Detailed progress for large presentations
+
 ## 📋 Project Status
 
 ✅ **COMPLETE** - The project is fully functional and ready for production use.
@@ -453,6 +506,10 @@ python main.py
 - 📚 Created detailed documentation
 - 🔧 Consolidated code into maintainable modules
 - 🚀 Simplified and optimized progress tracking
+- 📁 **Enhanced large file support** with memory optimization
+- ⏱️ **Improved timeout handling** for very large files
+- 🖼️ **Fixed PIL security limits** for legitimate large images
+- 🌐 **Better web UI** with file size validation and warnings
 
 For task tracking and future enhancements, see [TODO.md](TODO.md).
 

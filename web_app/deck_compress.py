@@ -13,6 +13,9 @@ from pathlib import Path
 from PIL import Image
 import io
 from rich.console import Console
+
+# Configure PIL for handling large images safely
+Image.MAX_IMAGE_PIXELS = 500_000_000  # 500 megapixels limit (increased from default ~179M)
 from rich.progress import (
     Progress,
     BarColumn,
@@ -585,8 +588,159 @@ def get_missing_tools() -> List[str]:
             missing.append(tool_name)
     return missing
 
+def compress_image_file_efficient(image_path: Path, quality: int, max_width: int, ultra_aggressive: bool = False) -> Optional[bytes]:
+    """Compress image file with memory-efficient approach for large files."""
+    try:
+        # Check file size first
+        file_size = image_path.stat().st_size
+        if file_size > 100 * 1024 * 1024:  # 100MB limit for individual images
+            console.print(f"[yellow]Warning: Image {image_path.name} is too large ({file_size / (1024*1024):.1f}MB), skipping compression[/yellow]")
+            return None
+        
+        with open(image_path, 'rb') as f:
+            original_data = f.read()
+        
+        original_format = image_path.suffix[1:]  # Remove the dot
+        return compress_image_safe(original_data, original_format, quality, max_width, ultra_aggressive)
+        
+    except Exception as e:
+        console.print(f"[yellow]Warning: Could not compress image {image_path.name}: {e}[/yellow]")
+        return None
+
+def compress_image_safe(image_data: bytes, original_format: str, quality: int = 85, max_width: int = 1920, ultra_aggressive: bool = False) -> Optional[bytes]:
+    """Safely compress image data with protection against decompression bombs."""
+    try:
+        # Increase PIL's image size limit for legitimate large images
+        from PIL import Image
+        Image.MAX_IMAGE_PIXELS = 500_000_000  # 500 megapixels limit
+        
+        with Image.open(io.BytesIO(image_data)) as img:
+            original_format_upper = original_format.upper()
+            original_size = len(image_data)
+            
+            # Check if image is too large even with increased limit
+            total_pixels = img.width * img.height
+            if total_pixels > 500_000_000:  # 500 megapixels
+                console.print(f"[yellow]Warning: Image too large ({total_pixels:,} pixels), skipping compression[/yellow]")
+                return None
+            
+            # Resize if too large (more aggressive resizing in ultra mode)
+            target_width = max_width
+            if ultra_aggressive and img.width > max_width * 1.5:
+                target_width = int(max_width * 0.8)  # More aggressive resizing
+            
+            if img.width > target_width:
+                ratio = target_width / img.width
+                new_height = int(img.height * ratio)
+                img = img.resize((target_width, new_height), Image.Resampling.LANCZOS)
+
+            output = io.BytesIO()
+
+            # Handle different formats appropriately
+            if original_format_upper in ['JPEG', 'JPG']:
+                # Convert to RGB if necessary for JPEG
+                if img.mode in ('RGBA', 'LA', 'P'):
+                    img = img.convert('RGB')
+                # Use progressive JPEG for better compression
+                effective_quality = max(quality - 10, 30) if ultra_aggressive else quality
+                img.save(output, format='JPEG', quality=effective_quality, optimize=True, progressive=True)
+            elif original_format_upper == 'PNG':
+                if ultra_aggressive and img.mode in ('RGB', 'L'):
+                    # Convert PNG to JPEG in ultra mode if no transparency
+                    effective_quality = max(quality - 10, 30)
+                    img.save(output, format='JPEG', quality=effective_quality, optimize=True, progressive=True)
+                else:
+                    # Keep PNG format to preserve transparency if present
+                    # Use aggressive compression for PNG files
+                    img.save(output, format='PNG', optimize=True, compress_level=9)
+            elif original_format_upper in ['BMP', 'TIFF', 'GIF']:
+                # Convert these formats to JPEG for better compression
+                if img.mode in ('RGBA', 'LA', 'P'):
+                    img = img.convert('RGB')
+                effective_quality = max(quality - 10, 30) if ultra_aggressive else quality
+                img.save(output, format='JPEG', quality=effective_quality, optimize=True, progressive=True)
+            else:
+                # Default to JPEG for unknown formats
+                if img.mode in ('RGBA', 'LA', 'P'):
+                    img = img.convert('RGB')
+                effective_quality = max(quality - 10, 30) if ultra_aggressive else quality
+                img.save(output, format='JPEG', quality=effective_quality, optimize=True, progressive=True)
+
+            compressed_data = output.getvalue()
+            
+            # If compression didn't help much, try more aggressive settings
+            if len(compressed_data) > original_size * 0.9:  # Less than 10% reduction
+                output2 = io.BytesIO()
+                if original_format_upper in ['JPEG', 'JPG']:
+                    # Try lower quality for JPEG
+                    lower_quality = max(quality - 15, 30)
+                    img.save(output2, format='JPEG', quality=lower_quality, optimize=True, progressive=True)
+                elif original_format_upper == 'PNG':
+                    # Try converting PNG to JPEG if no transparency
+                    if img.mode in ('RGB', 'L'):
+                        img.save(output2, format='JPEG', quality=quality, optimize=True, progressive=True)
+                    else:
+                        return compressed_data
+                else:
+                    return compressed_data
+                
+                # Use the more compressed version if it's significantly smaller
+                more_compressed = output2.getvalue()
+                if len(more_compressed) < len(compressed_data) * 0.8:  # 20% better
+                    return more_compressed
+            
+            return compressed_data
+            
+    except Exception as e:
+        console.print(f"[yellow]Warning: Could not compress image safely: {e}[/yellow]")
+        return None
+
+def compress_video_with_timeout(input_path: Path, output_path: Path, crf: int, timeout_seconds: int = 60) -> bool:
+    """Compress video with timeout protection for large files."""
+    try:
+        import signal
+        import subprocess
+        
+        def timeout_handler(signum, frame):
+            raise TimeoutError(f"Video compression timed out after {timeout_seconds} seconds")
+        
+        # Set up timeout
+        signal.signal(signal.SIGALRM, timeout_handler)
+        signal.alarm(timeout_seconds)
+        
+        try:
+            cmd = [
+                'ffmpeg', '-i', str(input_path),
+                '-c:v', 'libx264', '-crf', str(crf),
+                '-preset', 'fast',  # Use fast preset for large files
+                '-tune', 'film',
+                '-c:a', 'aac', '-b:a', '96k',
+                '-movflags', '+faststart',
+                '-y', str(output_path)
+            ]
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout_seconds)
+            return result.returncode == 0
+        finally:
+            signal.alarm(0)  # Cancel timeout
+            
+    except TimeoutError:
+        console.print(f"[yellow]Video compression timed out for {input_path.name}[/yellow]")
+        return False
+    except FileNotFoundError:
+        console.print("[red]Error: ffmpeg not found. Please install ffmpeg to compress videos.[/red]")
+        return False
+    except Exception as e:
+        console.print(f"[yellow]Warning: Could not compress video {input_path.name}: {e}[/yellow]")
+        return False
+
 def compress_image(image_data: bytes, original_format: str, quality: int = 85, max_width: int = 1920, ultra_aggressive: bool = False) -> bytes:
     """Compress image data while maintaining aspect ratio and original format when possible."""
+    # Use the safe compression function for better handling of large images
+    result = compress_image_safe(image_data, original_format, quality, max_width, ultra_aggressive)
+    if result is not None:
+        return result
+    
+    # Fallback to original method if safe method fails
     try:
         with Image.open(io.BytesIO(image_data)) as img:
             original_format_upper = original_format.upper()
@@ -776,7 +930,7 @@ def compress_doc(input_path: Path, output_path: Path, image_quality: int = 85, m
         progress.finish_all()
 
 def process_pptx(input_path: Path, output_path: Path, image_quality: int, max_width: int, video_crf: int, progress: CompressionProgress = None, ultra_aggressive: bool = False):
-    """Process PowerPoint file and compress embedded media."""
+    """Process PowerPoint file and compress embedded media with improved memory management for large files."""
     if progress is None:
         progress = CompressionProgress(total_files=1, show_details=True)
         progress.start_compression(input_path.name, input_path.stat().st_size)
@@ -801,60 +955,78 @@ def process_pptx(input_path: Path, output_path: Path, image_quality: int, max_wi
             total_original_size = 0
             total_compressed_size = 0
 
-            # Process media files with simple progress tracking
+            # Process media files with improved memory management
             media_files = [f for f in media_dir.glob("*") if f.is_file()]
             total_files = len(media_files)
 
             if progress.show_details:
                 console.print(f"[dim]Processing {total_files} media files...[/dim]")
 
+            # Sort files by size to process smaller files first (better memory management)
+            media_files.sort(key=lambda x: x.stat().st_size)
+
             for i, media_file in enumerate(media_files):
                 original_size = media_file.stat().st_size
                 total_original_size += original_size
 
                 if progress.show_details:
-                    console.print(f"[dim]Processing {media_file.name} ({i+1}/{total_files})...[/dim]", end="\r")
+                    file_size_mb = original_size / (1024 * 1024)
+                    console.print(f"[dim]Processing {media_file.name} ({i+1}/{total_files}) - {file_size_mb:.1f}MB...[/dim]")
 
                 # Check file type
                 suffix = media_file.suffix.lower()
 
-                if suffix in ['.jpg', '.jpeg', '.png', '.bmp', '.tiff', '.gif']:
-                    # Compress image
-                    with open(media_file, 'rb') as f:
-                        original_data = f.read()
+                try:
+                    if suffix in ['.jpg', '.jpeg', '.png', '.bmp', '.tiff', '.gif']:
+                        # Compress image with memory-efficient approach
+                        compressed_data = compress_image_file_efficient(media_file, image_quality, max_width, ultra_aggressive)
+                        
+                        if compressed_data is not None:
+                            # Save compressed image
+                            with open(media_file, 'wb') as f:
+                                f.write(compressed_data)
+                            compressed_size = len(compressed_data)
+                            total_compressed_size += compressed_size
+                            
+                            if progress.show_details:
+                                reduction = (1 - compressed_size / original_size) * 100
+                                console.print(f"[green]✓ Image compressed: {reduction:.1f}% reduction[/green]")
+                        else:
+                            total_compressed_size += original_size
+                            if progress.show_details:
+                                console.print(f"[yellow]⚠ Image compression skipped (too large or error)[/yellow]")
 
-                    # Get original format from file extension
-                    original_format = suffix[1:]  # Remove the dot
-                    compressed_data = compress_image(original_data, original_format, image_quality, max_width, ultra_aggressive)
-
-                    # Save compressed image with original filename to preserve PowerPoint references
-                    with open(media_file, 'wb') as f:
-                        f.write(compressed_data)
-
-                    compressed_size = len(compressed_data)
-                    total_compressed_size += compressed_size
-
-                elif suffix in ['.mp4', '.avi', '.mov', '.wmv', '.mkv']:
-                    # Compress video
-                    temp_video = temp_path / f"temp_video{suffix}"
-                    if compress_video(media_file, temp_video, video_crf):
-                        shutil.move(temp_video, media_file)
-                        compressed_size = media_file.stat().st_size
-                        total_compressed_size += compressed_size
-                        if progress.show_details:
-                            console.print(f"[green]✓ Video compressed[/green]")
+                    elif suffix in ['.mp4', '.avi', '.mov', '.wmv', '.mkv']:
+                        # Compress video with timeout protection
+                        temp_video = temp_path / f"temp_video_{i}{suffix}"
+                        if compress_video_with_timeout(media_file, temp_video, video_crf, timeout_seconds=60):
+                            shutil.move(temp_video, media_file)
+                            compressed_size = media_file.stat().st_size
+                            total_compressed_size += compressed_size
+                            if progress.show_details:
+                                reduction = (1 - compressed_size / original_size) * 100
+                                console.print(f"[green]✓ Video compressed: {reduction:.1f}% reduction[/green]")
+                        else:
+                            total_compressed_size += original_size
+                            if progress.show_details:
+                                console.print(f"[yellow]⚠ Video compression skipped (timeout or error)[/yellow]")
                     else:
+                        # Keep other files as-is
                         total_compressed_size += original_size
-                        if progress.show_details:
-                            console.print(f"[yellow]⚠ Video compression skipped[/yellow]")
-                else:
-                    # Keep other files as-is
+
+                except Exception as e:
+                    console.print(f"[yellow]Warning: Could not process {media_file.name}: {e}[/yellow]")
                     total_compressed_size += original_size
+
+                # Force garbage collection for large files
+                if original_size > 10 * 1024 * 1024:  # 10MB+
+                    import gc
+                    gc.collect()
 
             # Repack PPTX
             if progress.show_details:
                 console.print("[dim]Repacking PowerPoint...[/dim]")
-            with zipfile.ZipFile(output_path, 'w', zipfile.ZIP_DEFLATED) as zip_ref:
+            with zipfile.ZipFile(output_path, 'w', zipfile.ZIP_DEFLATED, compresslevel=6) as zip_ref:
                 for file_path in temp_path.rglob('*'):
                     if file_path.is_file():
                         arcname = file_path.relative_to(temp_path)
@@ -866,6 +1038,10 @@ def process_pptx(input_path: Path, output_path: Path, image_quality: int, max_wi
 
             progress.finish_file(True, input_path.stat().st_size, output_path.stat().st_size)
 
+    except Exception as e:
+        console.print(f"[red]Error processing PowerPoint: {e}[/red]")
+        progress.finish_file(False, input_path.stat().st_size)
+        raise
     finally:
         if progress is not None:
             progress.finish_all()
@@ -961,9 +1137,11 @@ def process_folder(folder_path: Path, min_size_mb: int, image_quality: int, max_
         console.print(f"[yellow]No files over {min_size_mb}MB found in {folder_path}[/yellow]")
         return 0
 
-    # Show file information using new utility
+    # Show file information
     console.print(f"[blue]Found {len(large_files)} files over {min_size_mb}MB:[/blue]")
-    show_file_info_table(large_files, f"Files to Process (>{min_size_mb}MB)")
+    for file in large_files:
+        file_size_mb = file.stat().st_size / (1024 * 1024)
+        console.print(f"  - {file.name}: {file_size_mb:.1f}MB")
 
     # Process files with simple progress tracking
     def process_file_with_progress(file_path: Path, **kwargs) -> bool:

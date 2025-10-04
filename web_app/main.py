@@ -52,8 +52,12 @@ async def upload_file(
     quality: int = Form(85),
     max_width: int = Form(1920),
     video_crf: int = Form(28),
-    ultra_mode: bool = Form(False)
+    ultra_mode: str = Form("false")
 ):
+    # Validate file
+    if not file.filename:
+        raise HTTPException(status_code=400, detail="No file provided")
+    
     # Validate file type
     allowed_extensions = {'.pptx', '.ppt', '.docx', '.doc', '.mp4', '.avi', '.mov', 
                          '.wmv', '.mkv', '.m4v', '.flv', '.webm', '.jpg', '.jpeg', 
@@ -61,7 +65,25 @@ async def upload_file(
     
     file_ext = Path(file.filename).suffix.lower()
     if file_ext not in allowed_extensions:
-        raise HTTPException(status_code=400, detail="Unsupported file type")
+        raise HTTPException(status_code=400, detail=f"Unsupported file type: {file_ext}")
+    
+    # File size validation (500MB limit for web uploads)
+    MAX_FILE_SIZE = 500 * 1024 * 1024  # 500MB
+    file_size = 0
+    content = await file.read()
+    file_size = len(content)
+    
+    if file_size > MAX_FILE_SIZE:
+        raise HTTPException(
+            status_code=413, 
+            detail=f"File too large. Maximum size is {MAX_FILE_SIZE // (1024*1024)}MB. Your file is {file_size // (1024*1024)}MB. Please use the CLI version for larger files."
+        )
+    
+    if file_size == 0:
+        raise HTTPException(status_code=400, detail="Empty file provided")
+    
+    # Convert ultra_mode string to boolean
+    ultra_mode_bool = ultra_mode.lower() == "true"
     
     # Create unique filename
     file_id = str(uuid.uuid4())
@@ -72,14 +94,31 @@ async def upload_file(
     output_path = UPLOAD_DIR / output_filename
     
     try:
-        # Save uploaded file
+        # Save uploaded file (reset file pointer after size check)
+        file.file.seek(0)
         with open(input_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
         
-        # Process the file
-        success = process_single_file(
-            input_path, output_path, quality, max_width, video_crf, ultra_mode
-        )
+        # Process the file with timeout protection
+        import signal
+        import time
+        
+        def timeout_handler(signum, frame):
+            raise TimeoutError("File processing timed out")
+        
+        # Set timeout based on file size (5 minutes base + 1 minute per 50MB)
+        timeout_seconds = 300 + (file_size // (50 * 1024 * 1024)) * 60
+        timeout_seconds = min(timeout_seconds, 1800)  # Max 30 minutes
+        
+        signal.signal(signal.SIGALRM, timeout_handler)
+        signal.alarm(timeout_seconds)
+        
+        try:
+            success = process_single_file(
+                input_path, output_path, quality, max_width, video_crf, ultra_mode_bool
+            )
+        finally:
+            signal.alarm(0)  # Cancel timeout
         
         if success and output_path.exists():
             return {
@@ -100,6 +139,7 @@ async def upload_file(
             input_path.unlink()
         if output_path.exists():
             output_path.unlink()
+        console.print(f"[red]Error processing file: {str(e)}[/red]")
         raise HTTPException(status_code=500, detail=f"Error processing file: {str(e)}")
     
     finally:
