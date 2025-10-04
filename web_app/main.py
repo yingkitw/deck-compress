@@ -174,6 +174,17 @@ async def download_file(filename: str, original_name: str = None):
 async def health_check():
     return {"status": "healthy", "message": "Deck Compress Web App is running", "version": "1.0.0"}
 
+@app.get("/debug")
+async def debug_info():
+    """Debug endpoint to check app status"""
+    return {
+        "status": "debug",
+        "upload_endpoint": "/upload/",
+        "supported_formats": ['.pptx', '.ppt', '.docx', '.doc', '.mp4', '.avi', '.mov', '.wmv', '.mkv', '.m4v', '.flv', '.webm', '.jpg', '.jpeg', '.png', '.bmp', '.tiff', '.gif'],
+        "max_file_size": "500MB",
+        "message": "Upload endpoint is active and ready"
+    }
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)

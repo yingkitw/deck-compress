@@ -5,11 +5,15 @@ services:
   github:
     repo: your-username/deck-compress
     branch: main
-  run_command: uvicorn main:app --host 0.0.0.0 --port 8080
+  run_command: uvicorn main:app --host 0.0.0.0 --port 8080 --log-level info
   environment_slug: python
   instance_count: 1
   instance_size_slug: basic-xxs
   envs:
   - key: PORT
     value: "8080"
+  - key: PYTHONUNBUFFERED
+    value: "1"
   http_port: 8080
+  health_check:
+    http_path: /health
