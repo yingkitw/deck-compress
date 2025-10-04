@@ -7,3 +7,14 @@ python-dotenv>=1.0.0
 # Core compression dependencies from main project
 Pillow>=10.0.0
 rich>=13.0.0
+
+# Python-native video processing alternatives to ffmpeg
+moviepy>=1.0.3
+imageio>=2.31.0
+imageio-ffmpeg>=0.4.8
+numpy>=1.25.0
+tqdm>=4.65.0
+
+# Additional video processing dependencies
+opencv-python>=4.8.0
+proglog>=0.1.12

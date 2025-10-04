@@ -695,47 +695,151 @@ def compress_image_safe(image_data: bytes, original_format: str, quality: int = 
         console.print(f"[yellow]Warning: Could not compress image safely: {e}[/yellow]")
         return None
 
+def compress_video_python_native(input_path: Path, output_path: Path, quality: int = 28) -> bool:
+    """Compress video using Python-native libraries (MoviePy/imageio) as fallback to ffmpeg."""
+    try:
+        from moviepy.editor import VideoFileClip
+        import imageio
+        
+        console.print(f"[blue]Using Python-native video compression for {input_path.name}[/blue]")
+        
+        # Load video with MoviePy
+        with VideoFileClip(str(input_path)) as video:
+            # Calculate compression parameters based on quality
+            # Convert CRF (0-51) to bitrate approximation
+            if quality <= 18:
+                bitrate = "2000k"  # High quality
+            elif quality <= 28:
+                bitrate = "1000k"  # Medium quality
+            elif quality <= 35:
+                bitrate = "500k"   # Lower quality
+            else:
+                bitrate = "300k"   # Very low quality
+            
+            # Resize if video is too large (similar to image resizing)
+            max_width = 1920
+            if video.w > max_width:
+                ratio = max_width / video.w
+                new_height = int(video.h * ratio)
+                video = video.resize((max_width, new_height))
+            
+            # Write compressed video using imageio
+            video.write_videofile(
+                str(output_path),
+                bitrate=bitrate,
+                audio_bitrate="96k",
+                verbose=False,
+                logger=None  # Suppress MoviePy logs
+            )
+            
+        return True
+        
+    except ImportError:
+        console.print("[yellow]Warning: MoviePy not available. Trying imageio fallback...[/yellow]")
+        return compress_video_imageio_fallback(input_path, output_path, quality)
+    except Exception as e:
+        console.print(f"[yellow]Warning: Python-native video compression failed: {e}[/yellow]")
+        return False
+
+def compress_video_imageio_fallback(input_path: Path, output_path: Path, quality: int = 28) -> bool:
+    """Fallback video compression using imageio only."""
+    try:
+        import imageio
+        import numpy as np
+        
+        console.print(f"[blue]Using imageio fallback for {input_path.name}[/blue]")
+        
+        # Read video with imageio
+        reader = imageio.get_reader(str(input_path))
+        fps = reader.get_meta_data().get('fps', 30)
+        
+        # Get video properties
+        first_frame = reader.get_data(0)
+        height, width = first_frame.shape[:2]
+        
+        # Resize if too large
+        max_width = 1920
+        if width > max_width:
+            ratio = max_width / width
+            new_height = int(height * ratio)
+            new_width = max_width
+        else:
+            new_height = height
+            new_width = width
+        
+        # Calculate quality for imageio (0-10 scale)
+        imageio_quality = max(1, min(10, int(10 - (quality / 51) * 9)))
+        
+        # Write compressed video
+        writer = imageio.get_writer(
+            str(output_path),
+            fps=fps,
+            quality=imageio_quality,
+            codec='libx264'
+        )
+        
+        # Process frames
+        for frame in reader:
+            if new_width != width or new_height != height:
+                # Resize frame
+                from PIL import Image
+                pil_image = Image.fromarray(frame)
+                resized = pil_image.resize((new_width, new_height), Image.Resampling.LANCZOS)
+                frame = np.array(resized)
+            
+            writer.append_data(frame)
+        
+        reader.close()
+        writer.close()
+        return True
+        
+    except Exception as e:
+        console.print(f"[yellow]Warning: imageio fallback failed: {e}[/yellow]")
+        return False
+
 def compress_video_with_timeout(input_path: Path, output_path: Path, crf: int, timeout_seconds: int = 60) -> bool:
-    """Compress video with timeout protection for large files."""
+    """Compress video with timeout protection, trying ffmpeg first, then Python-native alternatives."""
     try:
         import signal
         import subprocess
         import shutil
         
-        # Check if ffmpeg is available
-        if not shutil.which('ffmpeg'):
-            console.print("[yellow]Warning: ffmpeg not found. Video compression will be skipped.[/yellow]")
-            console.print("[blue]Tip: Install ffmpeg for video compression support.[/blue]")
-            return False
+        # First try ffmpeg if available
+        if shutil.which('ffmpeg'):
+            console.print(f"[blue]Using ffmpeg for video compression[/blue]")
+            
+            def timeout_handler(signum, frame):
+                raise TimeoutError(f"Video compression timed out after {timeout_seconds} seconds")
+            
+            # Set up timeout
+            signal.signal(signal.SIGALRM, timeout_handler)
+            signal.alarm(timeout_seconds)
+            
+            try:
+                cmd = [
+                    'ffmpeg', '-i', str(input_path),
+                    '-c:v', 'libx264', '-crf', str(crf),
+                    '-preset', 'fast',  # Use fast preset for large files
+                    '-tune', 'film',
+                    '-c:a', 'aac', '-b:a', '96k',
+                    '-movflags', '+faststart',
+                    '-y', str(output_path)
+                ]
+                result = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout_seconds)
+                if result.returncode == 0:
+                    return True
+                else:
+                    console.print("[yellow]ffmpeg failed, trying Python-native alternative...[/yellow]")
+            finally:
+                signal.alarm(0)  # Cancel timeout
+        else:
+            console.print("[blue]ffmpeg not found, using Python-native video compression[/blue]")
         
-        def timeout_handler(signum, frame):
-            raise TimeoutError(f"Video compression timed out after {timeout_seconds} seconds")
-        
-        # Set up timeout
-        signal.signal(signal.SIGALRM, timeout_handler)
-        signal.alarm(timeout_seconds)
-        
-        try:
-            cmd = [
-                'ffmpeg', '-i', str(input_path),
-                '-c:v', 'libx264', '-crf', str(crf),
-                '-preset', 'fast',  # Use fast preset for large files
-                '-tune', 'film',
-                '-c:a', 'aac', '-b:a', '96k',
-                '-movflags', '+faststart',
-                '-y', str(output_path)
-            ]
-            result = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout_seconds)
-            return result.returncode == 0
-        finally:
-            signal.alarm(0)  # Cancel timeout
+        # Fallback to Python-native compression
+        return compress_video_python_native(input_path, output_path, crf)
             
     except TimeoutError:
         console.print(f"[yellow]Video compression timed out for {input_path.name}[/yellow]")
-        return False
-    except FileNotFoundError:
-        console.print("[yellow]Warning: ffmpeg not found. Video compression will be skipped.[/yellow]")
-        console.print("[blue]Tip: Install ffmpeg for video compression support.[/blue]")
         return False
     except Exception as e:
         console.print(f"[yellow]Warning: Could not compress video {input_path.name}: {e}[/yellow]")
@@ -825,31 +929,34 @@ def compress_image(image_data: bytes, original_format: str, quality: int = 85, m
         return image_data
 
 def compress_video(video_path: Path, output_path: Path, crf: int = 28) -> bool:
-    """Compress video using ffmpeg with optimized settings for better compression."""
+    """Compress video using ffmpeg with Python-native fallback."""
     try:
         import shutil
+        import subprocess
         
-        # Check if ffmpeg is available
-        if not shutil.which('ffmpeg'):
-            console.print("[yellow]Warning: ffmpeg not found. Video compression will be skipped.[/yellow]")
-            console.print("[blue]Tip: Install ffmpeg for video compression support.[/blue]")
-            return False
-            
-        cmd = [
-            'ffmpeg', '-i', str(video_path),
-            '-c:v', 'libx264', '-crf', str(crf),
-            '-preset', 'slow',  # Better compression, slower encoding
-            '-tune', 'film',    # Optimize for typical content
-            '-c:a', 'aac', '-b:a', '96k',  # Lower audio bitrate
-            '-movflags', '+faststart',  # Web optimization
-            '-y', str(output_path)
-        ]
-        result = subprocess.run(cmd, capture_output=True, text=True)
-        return result.returncode == 0
-    except FileNotFoundError:
-        console.print("[yellow]Warning: ffmpeg not found. Video compression will be skipped.[/yellow]")
-        console.print("[blue]Tip: Install ffmpeg for video compression support.[/blue]")
-        return False
+        # First try ffmpeg if available
+        if shutil.which('ffmpeg'):
+            console.print(f"[blue]Using ffmpeg for video compression[/blue]")
+            cmd = [
+                'ffmpeg', '-i', str(video_path),
+                '-c:v', 'libx264', '-crf', str(crf),
+                '-preset', 'slow',  # Better compression, slower encoding
+                '-tune', 'film',    # Optimize for typical content
+                '-c:a', 'aac', '-b:a', '96k',  # Lower audio bitrate
+                '-movflags', '+faststart',  # Web optimization
+                '-y', str(output_path)
+            ]
+            result = subprocess.run(cmd, capture_output=True, text=True)
+            if result.returncode == 0:
+                return True
+            else:
+                console.print("[yellow]ffmpeg failed, trying Python-native alternative...[/yellow]")
+        else:
+            console.print("[blue]ffmpeg not found, using Python-native video compression[/blue]")
+        
+        # Fallback to Python-native compression
+        return compress_video_python_native(video_path, output_path, crf)
+        
     except Exception as e:
         console.print(f"[yellow]Warning: Could not compress video: {e}[/yellow]")
         return False
