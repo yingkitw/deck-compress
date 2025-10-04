@@ -11,24 +11,62 @@ from typing import Optional
 import sys
 
 # Add the src directory to the path to import deck_compress
-sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+current_dir = Path(__file__).parent
+src_path = current_dir.parent / "src"
+
+# Try multiple paths for the src directory
+possible_paths = [
+    src_path,
+    current_dir / "src",
+    Path("/app/src"),
+    Path("/workspace/src")
+]
+
+for path in possible_paths:
+    if path.exists():
+        sys.path.insert(0, str(path))
+        break
 
 try:
     from deck_compress import process_single_file, CompressionProgress
     from rich.console import Console
-except ImportError:
-    print("Error: Could not import deck_compress module")
-    print("Make sure the src directory is properly structured")
+except ImportError as e:
+    print(f"Error: Could not import deck_compress module: {e}")
+    print(f"Current working directory: {os.getcwd()}")
+    print(f"Python path: {sys.path}")
+    print(f"Files in current directory: {os.listdir('.')}")
+    
+    # Try to find the deck_compress module
+    for path in possible_paths:
+        if path.exists():
+            print(f"Checking {path}: {os.listdir(path) if path.is_dir() else 'not a directory'}")
+    
+    # Try to import from current directory as fallback
+    try:
+        import deck_compress
+        print("Found deck_compress in current directory")
+    except ImportError:
+        print("deck_compress not found in current directory either")
+    
     raise
 
 app = FastAPI(title="Deck Compress Web", version="1.0.0")
 
 # Mount static files and templates
-app.mount("/static", StaticFiles(directory="web_app/static"), name="static")
-templates = Jinja2Templates(directory="web_app/templates")
+static_dir = Path("static")
+templates_dir = Path("templates")
+
+# Try different paths for static files
+if not static_dir.exists():
+    static_dir = Path("web_app/static")
+if not templates_dir.exists():
+    templates_dir = Path("web_app/templates")
+
+app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
+templates = Jinja2Templates(directory=str(templates_dir))
 
 # Create upload directory
-UPLOAD_DIR = Path("web_app/static/uploads")
+UPLOAD_DIR = static_dir / "uploads"
 UPLOAD_DIR.mkdir(exist_ok=True, parents=True)
 
 console = Console()
