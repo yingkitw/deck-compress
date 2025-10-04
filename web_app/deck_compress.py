@@ -739,7 +739,12 @@ def compress_video_python_native(input_path: Path, output_path: Path, quality: i
         return compress_video_imageio_fallback(input_path, output_path, quality)
     except Exception as e:
         console.print(f"[yellow]Warning: Python-native video compression failed: {e}[/yellow]")
-        return False
+        # Try imageio fallback as last resort
+        try:
+            return compress_video_imageio_fallback(input_path, output_path, quality)
+        except Exception as e2:
+            console.print(f"[yellow]Warning: All video compression methods failed: {e2}[/yellow]")
+            return False
 
 def compress_video_imageio_fallback(input_path: Path, output_path: Path, quality: int = 28) -> bool:
     """Fallback video compression using imageio only."""
@@ -751,11 +756,21 @@ def compress_video_imageio_fallback(input_path: Path, output_path: Path, quality
         
         # Read video with imageio
         reader = imageio.get_reader(str(input_path))
-        fps = reader.get_meta_data().get('fps', 30)
         
-        # Get video properties
-        first_frame = reader.get_data(0)
-        height, width = first_frame.shape[:2]
+        # Get video properties safely
+        try:
+            fps = reader.get_meta_data().get('fps', 30)
+        except:
+            fps = 30  # Default FPS if metadata is not available
+        
+        # Get first frame to determine dimensions
+        try:
+            first_frame = reader.get_data(0)
+            height, width = first_frame.shape[:2]
+        except Exception as e:
+            console.print(f"[yellow]Warning: Could not read video frames: {e}[/yellow]")
+            reader.close()
+            return False
         
         # Resize if too large
         max_width = 1920
@@ -770,28 +785,69 @@ def compress_video_imageio_fallback(input_path: Path, output_path: Path, quality
         # Calculate quality for imageio (0-10 scale)
         imageio_quality = max(1, min(10, int(10 - (quality / 51) * 9)))
         
-        # Write compressed video
-        writer = imageio.get_writer(
-            str(output_path),
-            fps=fps,
-            quality=imageio_quality,
-            codec='libx264'
-        )
+        # Try different codecs in order of preference
+        codecs_to_try = ['libx264', 'h264', 'mpeg4', 'libvpx']
+        writer = None
         
-        # Process frames
-        for frame in reader:
-            if new_width != width or new_height != height:
-                # Resize frame
-                from PIL import Image
-                pil_image = Image.fromarray(frame)
-                resized = pil_image.resize((new_width, new_height), Image.Resampling.LANCZOS)
-                frame = np.array(resized)
+        for codec in codecs_to_try:
+            try:
+                writer = imageio.get_writer(
+                    str(output_path),
+                    fps=fps,
+                    quality=imageio_quality,
+                    codec=codec
+                )
+                console.print(f"[blue]Using codec: {codec}[/blue]")
+                break
+            except Exception as e:
+                console.print(f"[yellow]Codec {codec} failed: {e}[/yellow]")
+                continue
+        
+        if writer is None:
+            console.print("[yellow]No suitable codec found, skipping video compression[/yellow]")
+            reader.close()
+            return False
+        
+        # Process frames with error handling
+        try:
+            frame_count = 0
+            for frame in reader:
+                try:
+                    if new_width != width or new_height != height:
+                        # Resize frame using PIL
+                        from PIL import Image
+                        pil_image = Image.fromarray(frame)
+                        resized = pil_image.resize((new_width, new_height), Image.Resampling.LANCZOS)
+                        frame = np.array(resized)
+                    
+                    writer.append_data(frame)
+                    frame_count += 1
+                    
+                    # Limit processing to prevent memory issues
+                    if frame_count > 10000:  # 10k frame limit
+                        console.print("[yellow]Video too long, truncating at 10k frames[/yellow]")
+                        break
+                        
+                except Exception as e:
+                    console.print(f"[yellow]Warning: Error processing frame {frame_count}: {e}[/yellow]")
+                    continue
             
-            writer.append_data(frame)
-        
-        reader.close()
-        writer.close()
-        return True
+            writer.close()
+            reader.close()
+            
+            if frame_count > 0:
+                console.print(f"[green]Successfully compressed {frame_count} frames[/green]")
+                return True
+            else:
+                console.print("[yellow]No frames were processed successfully[/yellow]")
+                return False
+                
+        except Exception as e:
+            console.print(f"[yellow]Warning: Error during frame processing: {e}[/yellow]")
+            if writer:
+                writer.close()
+            reader.close()
+            return False
         
     except Exception as e:
         console.print(f"[yellow]Warning: imageio fallback failed: {e}[/yellow]")
@@ -1121,26 +1177,37 @@ def process_pptx(input_path: Path, output_path: Path, image_quality: int, max_wi
                                 console.print(f"[yellow]⚠ Image compression skipped (too large or error)[/yellow]")
 
                     elif suffix in ['.mp4', '.avi', '.mov', '.wmv', '.mkv']:
-                        # Compress video with timeout protection
-                        temp_video = temp_path / f"temp_video_{i}{suffix}"
-                        if compress_video_with_timeout(media_file, temp_video, video_crf, timeout_seconds=60):
-                            shutil.move(temp_video, media_file)
-                            compressed_size = media_file.stat().st_size
-                            total_compressed_size += compressed_size
-                            if progress.show_details:
-                                reduction = (1 - compressed_size / original_size) * 100
-                                console.print(f"[green]✓ Video compressed: {reduction:.1f}% reduction[/green]")
-                        else:
+                        # Compress video with timeout protection and crash prevention
+                        try:
+                            temp_video = temp_path / f"temp_video_{i}{suffix}"
+                            if compress_video_with_timeout(media_file, temp_video, video_crf, timeout_seconds=60):
+                                shutil.move(temp_video, media_file)
+                                compressed_size = media_file.stat().st_size
+                                total_compressed_size += compressed_size
+                                if progress.show_details:
+                                    reduction = (1 - compressed_size / original_size) * 100
+                                    console.print(f"[green]✓ Video compressed: {reduction:.1f}% reduction[/green]")
+                            else:
+                                # If video compression fails completely, just keep the original
+                                console.print(f"[yellow]⚠ Video compression failed for {media_file.name}, keeping original[/yellow]")
+                                total_compressed_size += original_size
+                                if progress.show_details:
+                                    console.print(f"[yellow]⚠ Video compression skipped (compression failed)[/yellow]")
+                        except Exception as video_error:
+                            console.print(f"[yellow]⚠ Video compression crashed for {media_file.name}: {video_error}[/yellow]")
+                            console.print(f"[blue]Keeping original video file[/blue]")
                             total_compressed_size += original_size
-                            if progress.show_details:
-                                console.print(f"[yellow]⚠ Video compression skipped (timeout or error)[/yellow]")
                     else:
                         # Keep other files as-is
                         total_compressed_size += original_size
 
                 except Exception as e:
                     console.print(f"[yellow]Warning: Could not process {media_file.name}: {e}[/yellow]")
-                    total_compressed_size += original_size
+                    # Ensure we don't crash the entire process
+                    try:
+                        total_compressed_size += original_size
+                    except:
+                        pass  # If even this fails, just continue
 
                 # Force garbage collection for large files
                 if original_size > 10 * 1024 * 1024:  # 10MB+
